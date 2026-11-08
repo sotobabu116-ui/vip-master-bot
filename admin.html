@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HGNICE Master Admin Panel</title>
+    <style>
+        body { background: #060913; color: #f8fafc; font-family: 'Segoe UI', sans-serif; padding: 15px; margin: 0; }
+        .container { max-width: 650px; margin: 0 auto; }
+        .card {
+            background: #0f172a; border: 1px solid #1e293b; border-radius: 14px;
+            padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        h2, h3 { color: #38bdf8; margin-top: 0; }
+        input, select {
+            width: 100%; padding: 10px; margin: 8px 0; border-radius: 8px;
+            border: 1px solid #334155; background: #090d16; color: #fff; box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 16px; border: none; border-radius: 8px; font-weight: bold;
+            cursor: pointer; color: #000; background: #38bdf8; width: 100%; margin-top: 6px;
+        }
+        .btn-danger { background: #f43f5e; color: #fff; }
+        .btn-success { background: #10b981; color: #000; }
+        .user-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #1e293b; padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px;
+        }
+        .badge-active { color: #10b981; font-weight: bold; }
+        .badge-blocked { color: #f43f5e; font-weight: bold; }
+        .small-btn { padding: 5px 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Admin Login -->
+    <div class="card" id="admin-login-box">
+        <h2>🛡️ HGNICE MASTER ADMIN LOGIN</h2>
+        <p style="font-size:12px; color:#94a3b8;">অ্যাডমিন প্যানেলে প্রবেশ করতে মাস্টার পাসওয়ার্ড দিন:</p>
+        <input type="password" id="admin-pass" placeholder="Enter Master Password (AFIF-MASTER-99)">
+        <button class="btn" onclick="loginAdmin()">লগইন করুন</button>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" style="display:none;">
+        <div class="card">
+            <h2>👑 গ্র্যান্ডমাস্টার অ্যাডমিন কন্ট্রোল (Afif Abdullah)</h2>
+            <p style="font-size: 12px; color: #94a3b8;">২৪/৭ ক্লাউড ব্রেইন স্ট্যাটাস এবং ইউজার অ্যাক্সেস কন্ট্রোল সেন্টার</p>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn" id="maint-btn" onclick="toggleMaintenance()">🔧 Maintenance Mode: OFF</button>
+                <button class="btn btn-success" onclick="boostBrainMemory()">⚡ Boost AI Brain (+1,000 Rounds)</button>
+            </div>
+        </div>
+
+        <!-- Add New VIP User Key -->
+        <div class="card">
+            <h3>➕ নতুন ইউজার VIP Key তৈরি করুন</h3>
+            <input type="text" id="new-user-name" placeholder="ইউজারের নাম (যেমন: Rahim VIP)">
+            <input type="text" id="new-user-key" placeholder="অ্যাক্সেস কী (যেমন: VIP-7788)">
+            <button class="btn" onclick="generateRandomKey()" style="background:#f59e0b; margin-bottom:6px;">🎲 অটো র‍্যান্ডম কী তৈরি করুন</button>
+            <button class="btn btn-success" onclick="addUserKey()">✅ ইউজার সেভ ও অ্যাক্টিভ করুন</button>
+        </div>
+
+        <!-- Manage & Block/Unblock Users -->
+        <div class="card">
+            <h3>👥 ইউজার লিস্ট এবং ব্লক / আনব্লক কন্ট্রোল</h3>
+            <div id="users-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const MASTER_PASS = "AFIF-MASTER-99";
+
+function getAdminDB() {
+    return JSON.parse(localStorage.getItem("HGNICE_ADMIN_DB")) || {
+        maintenance: false,
+        profitTargetWarning: 5,
+        users: {
+            "VIP-AFIF-999": { status: "active", name: "Master Afif" },
+            "VIP-2026-PRO": { status: "active", name: "VIP Member 1" }
+        }
+    };
+}
+
+function saveAdminDB(db) {
+    localStorage.setItem("HGNICE_ADMIN_DB", JSON.stringify(db));
+    renderUsers();
+}
+
+function loginAdmin() {
+    const pass = document.getElementById("admin-pass").value.trim();
+    if (pass === MASTER_PASS) {
+        document.getElementById("admin-login-box").style.display = "none";
+        document.getElementById("admin-dashboard").style.display = "block";
+        renderUsers();
+    } else {
+        alert("ভুল মাস্টার পাসওয়ার্ড!");
+    }
+}
+
+function generateRandomKey() {
+    const rand = Math.random().toString(36).substring(2, 7).toUpperCase();
+    document.getElementById("new-user-key").value = "VIP-" + rand;
+}
+
+function addUserKey() {
+    const name = document.getElementById("new-user-name").value.trim() || "VIP User";
+    const key = document.getElementById("new-user-key").value.trim();
+    if (!key) return alert("একটি Key লিখুন!");
+
+    const db = getAdminDB();
+    db.users[key] = { status: "active", name: name };
+    saveAdminDB(db);
+    document.getElementById("new-user-name").value = "";
+    document.getElementById("new-user-key").value = "";
+    alert(`ইউজার ${name} (${key}) সফলভাবে অ্যাক্টিভ হয়েছে!`);
+}
+
+function toggleUserStatus(key) {
+    const db = getAdminDB();
+    if (db.users[key]) {
+        db.users[key].status = db.users[key].status === "active" ? "blocked" : "active";
+        saveAdminDB(db);
+    }
+}
+
+function deleteUser(key) {
+    const db = getAdminDB();
+    delete db.users[key];
+    saveAdminDB(db);
+}
+
+function toggleMaintenance() {
+    const db = getAdminDB();
+    db.maintenance = !db.maintenance;
+    saveAdminDB(db);
+}
+
+function boostBrainMemory() {
+    let brain = JSON.parse(localStorage.getItem("HGNICE_GRANDMASTER_BRAIN")) || { totalRoundsLearned: 14850 };
+    brain.totalRoundsLearned += 1000;
+    localStorage.setItem("HGNICE_GRANDMASTER_BRAIN", JSON.stringify(brain));
+    alert("বটের মেমোরিতে আরও ১,০০০ সেলফ-টেস্ট রাউন্ড যুক্ত করা হয়েছে! মোট রাউন্ড: " + brain.totalRoundsLearned);
+}
+
+function renderUsers() {
+    const db = getAdminDB();
+    const maintBtn = document.getElementById("maint-btn");
+    maintBtn.innerText = db.maintenance ? "🚨 Maintenance Mode: ON (Bot Locked)" : "🔧 Maintenance Mode: OFF (Bot Live)";
+    maintBtn.className = db.maintenance ? "btn btn-danger" : "btn";
+
+    const listEl = document.getElementById("users-list");
+    listEl.innerHTML = "";
+
+    Object.keys(db.users).forEach(key => {
+        const u = db.users[key];
+        const isAct = u.status === "active";
+        listEl.innerHTML += `
+            <div class="user-row">
+                <div>
+                    <b>${u.name}</b> <br>
+                    <span style="color:#38bdf8; font-family:monospace;">Key: ${key}</span> |
+                    <span class="${isAct ? 'badge-active' : 'badge-blocked'}">${u.status.toUpperCase()}</span>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="small-btn" style="background:${isAct ? '#f43f5e' : '#10b981'}; color:#fff;" onclick="toggleUserStatus('${key}')">
+                        ${isAct ? '🚫 Block' : '✅ Unblock'}
+                    </button>
+                    <button class="small-btn" style="background:#475569; color:#fff;" onclick="deleteUser('${key}')">🗑️</button>
+                </div>
+            </div>
+        `;
+    });
+}
+</script>
+</body>
+</html>
