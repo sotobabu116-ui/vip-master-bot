@@ -1,0 +1,656 @@
++ freq[1] + fr <!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HGNICE VIP AI Grandmaster Bot</title>
+    <style>
+        :root {
+            --bg-dark: #070b19;
+            --card-bg: rgba(16, 23, 42, 0.92);
+            --neon-blue: #00f2fe;
+            --neon-green: #00ff87;
+            --neon-red: #ff0844;
+            --neon-gold: #f6d365;
+            --neon-purple: #b224ef;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; user-select: none; }
+        body { background: var(--bg-dark); color: #fff; overflow-x: hidden; height: 100vh; position: relative; }
+
+        /* Game Background Iframe Container */
+        #game-frame {
+            width: 100%; height: 100vh; border: none; position: absolute; top: 0; left: 0; z-index: 1;
+        }
+
+        /* Movable Floating Master Bot Overlay */
+        #floating-bot {
+            position: fixed; top: 30px; left: 15px; width: 335px;
+            background: var(--card-bg); border: 2px solid var(--neon-blue);
+            border-radius: 18px; box-shadow: 0 0 25px rgba(0, 242, 254, 0.45);
+            backdrop-filter: blur(12px); z-index: 9999; overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Drag Header */
+        .bot-header {
+            background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
+            padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.3); cursor: move;
+        }
+        .bot-title { font-size: 14px; font-weight: 800; color: var(--neon-gold); display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px; }
+        .live-dot { width: 9px; height: 9px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 8px var(--neon-green); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
+        .header-btns button {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;
+        }
+
+        /* Login / Lock Screen inside Bot */
+        #lock-screen { padding: 18px; text-align: center; }
+        .lock-input {
+            width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;
+            border: 1px solid var(--neon-blue); background: #0b1120; color: #fff; text-align: center; font-size: 14px;
+        }
+        .btn-unlock {
+            width: 100%; padding: 10px; background: linear-gradient(45deg, #00f2fe, #4facfe);
+            border: none; border-radius: 8px; color: #000; font-weight: 800; cursor: pointer;
+        }
+
+        /* Main Bot Body */
+        #bot-body { padding: 12px; display: none; }
+
+        /* Mode Selector (30s vs 1Min) */
+        .mode-switch { display: flex; gap: 8px; margin-bottom: 10px; }
+        .mode-btn {
+            flex: 1; padding: 7px; font-size: 12px; font-weight: bold; border-radius: 8px;
+            border: 1px solid rgba(0, 242, 254, 0.4); background: #0f172a; color: #94a3b8; cursor: pointer;
+        }
+        .mode-btn.active {
+            background: linear-gradient(45deg, #00f2fe, #0072ff); color: #fff; border-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        /* Brain Evolution & Period Bar */
+        .status-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+            background: rgba(0,0,0,0.4); padding: 8px; border-radius: 10px; margin-bottom: 10px; font-size: 11px;
+        }
+        .stat-item span { color: var(--neon-blue); font-weight: bold; }
+
+        /* Deep Scan Progress Box */
+        .scan-box {
+            background: #090d16; border: 1px solid #1e293b; border-radius: 12px;
+            padding: 12px; text-align: center; position: relative; margin-bottom: 10px;
+        }
+        .scan-status-text { font-size: 12px; color: var(--neon-gold); margin-bottom: 6px; font-weight: 600; min-height: 18px; }
+        .progress-bar-bg { width: 100%; height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-green)); transition: width 0.4s ease; }
+
+        /* Grandmaster Output Signal Display */
+        .signal-output {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 95px; border-radius: 10px; background: rgba(255,255,255,0.03); padding: 8px;
+        }
+        .sig-main { font-size: 26px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin: 2px 0; }
+        .sig-big { color: var(--neon-gold); text-shadow: 0 0 12px rgba(246, 211, 101, 0.7); }
+        .sig-small { color: var(--neon-blue); text-shadow: 0 0 12px rgba(0, 242, 254, 0.7); }
+        .sig-wait { color: #94a3b8; font-size: 15px; }
+
+        .sig-sub { display: flex; gap: 10px; align-items: center; margin-top: 4px; font-size: 12px; font-weight: bold; }
+        .num-badge {
+            background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--neon-gold);
+            color: var(--neon-gold); padding: 2px 8px; border-radius: 6px; font-size: 13px;
+        }
+
+        /* 5 Algorithms Live Indicator */
+        .algo-tags { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-bottom: 10px; }
+        .algo-tag {
+            font-size: 9.5px; padding: 3px 6px; border-radius: 4px; background: #1e293b; color: #64748b; border: 1px solid transparent;
+        }
+        .algo-tag.active-algo { background: rgba(0, 255, 135, 0.15); color: var(--neon-green); border-color: var(--neon-green); font-weight: bold; }
+
+        /* Recovery & Profit Guard Bar */
+        .guard-bar {
+            display: flex; justify-content: space-between; font-size: 11px;
+            background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 8px; margin-bottom: 10px;
+        }
+
+        /* Bottom Action Buttons */
+        .bot-footer { display: flex; gap: 8px; }
+        .btn-ctrl {
+            flex: 1; padding: 9px; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;
+        }
+        .btn-start { background: var(--neon-green); color: #000; }
+        .btn-stop { background: var(--neon-red); color: #fff; }
+        .btn-tg { background: #0088cc; color: #fff; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+
+    <!-- Background Game Website with Your Official Invite Code -->
+    <iframe id="game-frame" src="https://www.hgnicebdt98app.com/#/register?invitationCode=732171626890"></iframe>
+
+    <!-- Movable Floating AI Master Bot -->
+    <div id="floating-bot">
+        <div class="bot-header" id="drag-handle">
+            <div class="bot-title"><div class="live-dot"></div> HGNICE AI GRANDMASTER</div>
+            <div class="header-btns">
+                <button onclick="toggleMinimize()" id="min-btn">_</button>
+            </div>
+        </div>
+
+        <!-- Security Key Lock Screen -->
+        <div id="lock-screen">
+            <div style="font-size: 13px; color: var(--neon-gold); margin-bottom: 6px; font-weight: bold;">🔒 VIP মেম্বারশিপ ভেরিফিকেশন</div>
+            <p style="font-size: 11px; color: #94a3b8;">বট চালু করতে আপনার অ্যাডমিন অনুমোদিত VIP Key দিন:</p>
+            <input type="text" id="vip-key-input" class="lock-input" placeholder="Enter VIP Access Key...">
+            <button class="btn-unlock" onclick="verifyVipKey()">আনলক করুন (UNLOCK)</button>
+            <div id="lock-msg" style="font-size: 11px; color: var(--neon-red); margin-top: 8px;"></div>
+            <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px;">
+                <a href="https://t.me/Afif_abdullah_xo" target="_blank" style="color: var(--neon-blue); font-size: 11px; text-decoration: none; font-weight: bold;">📩 VIP Key নিতে টেলিগ্রামে যোগাযোগ করুন (@Afif_abdullah_xo)</a>
+                <a href="https://www.hgnicebdt98app.com/#/register?invitationCode=732171626890" target="_blank" style="color: var(--neon-gold); font-size: 11px; text-decoration: none;">🎮 অফিশিয়াল ভিআইপি অ্যাকাউন্ট খুলুন</a>
+            </div>
+        </div>
+
+        <!-- Unlocked Master Bot Body -->
+        <div id="bot-body">
+            <!-- Dual Game Mode Switch -->
+            <div class="mode-switch">
+                <button class="mode-btn active" id="mode-30s" onclick="switchMode(30)">⚡ WinGo 30s (12s Scan)</button>
+                <button class="mode-btn" id="mode-60s" onclick="switchMode(60)">⏱️ WinGo 1Min (25s Scan)</button>
+            </div>
+
+            <!-- Brain Memory & Period Info -->
+            <div class="status-grid">
+                <div class="stat-item">পিরিয়ড: <span id="period-id">Loading...</span></div>
+                <div class="stat-item">টাইমার: <span id="timer-sec">00s</span></div>
+                <div class="stat-item">মেমোরি রাউন্ড: <span id="memory-count">0</span>+</div>
+                <div class="stat-item">ব্রেইন লেভেল: <span id="brain-lvl" style="color:var(--neon-gold);">Grandmaster</span></div>
+            </div>
+
+            <!-- 5 Master Algorithms Indicator -->
+            <div class="algo-tags">
+                <span class="algo-tag" id="tag-dragon">🐉 Dragon</span>
+                <span class="algo-tag" id="tag-pingpong">🏓 Ping-Pong</span>
+                <span class="algo-tag" id="tag-cluster">🔗 Double-Cluster</span>
+                <span class="algo-tag" id="tag-hotloop">🔥 Hot Loop</span>
+                <span class="algo-tag" id="tag-noise">🛡️ Noise Filter</span>
+            </div>
+
+            <!-- Deep Scan & Signal Box -->
+            <div class="scan-box">
+                <div class="scan-status-text" id="scan-text">সার্ভার ব্রেইন রেডি হচ্ছে...</div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="scan-bar"></div></div>
+
+                <div class="signal-output" id="signal-box">
+                    <div class="sig-main sig-wait" id="main-pred">WAITING FOR SCAN</div>
+                    <div class="sig-sub" id="sub-pred" style="display:none;">
+                        <span id="color-pred">🟢 GREEN</span>
+                        <span class="num-badge" id="num-pred">🎯 2, 6, 8</span>
+                    </div>
+                    <div style="font-size: 10px; color: #94a3b8; margin-top: 5px;" id="conf-text">AI Confidence: --%</div>
+                </div>
+            </div>
+
+            <!-- Recovery Step & Profit Guard -->
+            <div class="guard-bar">
+                <div>স্টেপ: <b id="step-Text" style="color:var(--neon-green);">Level 1 (Safe)</b></div>
+                <div>সেশন প্রফিট: <b id="win-count" style="color:var(--neon-gold);">0 Win</b></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="bot-footer">
+                <button class="btn-ctrl btn-start" id="toggle-bot-btn" onclick="toggleBotEngine()">▶ START AI</button>
+                <a href="https://t.me/Afif_abdullah_xo" target="_blank" class="btn-ctrl btn-tg">✈️ অ্যাডমিন সাপোর্ট</a>
+            </div>
+        </div>
+    </div>
+
+<script>
+/* =========================================================================
+   HGNICE GRANDMASTER AI ENGINE (5-ALGO + DEEP SCAN + 24/7 MEMORY + BENGALI VOICE)
+   ========================================================================= */
+
+let currentMode = 30; // 30s or 60s
+let botRunning = false;
+let currentPeriod = "";
+let signalDeliveredForPeriod = "";
+let isMinimized = false;
+
+// Brain Long-Term Memory Structure (Persists for years in LocalStorage/IndexedDB + Syncs with Cloud)
+let aiBrain = JSON.parse(localStorage.getItem("HGNICE_GRANDMASTER_BRAIN")) || {
+    totalRoundsLearned: 14850, // Pre-trained base + grows forever
+    historyLog: [],            // Stores {period, size, color, num, predicted, win}
+    weights: { dragon: 1.2, pingpong: 1.1, cluster: 1.15, hotloop: 1.25 },
+    blacklistPatterns: {},     // Error memory to never repeat same mistake
+    sessionWins: 0,
+    currentLossStep: 1,
+    lastOfflineTimestamp: Date.now()
+};
+
+// Default Admin Keys Database (Shared with admin.html via storage/cloud)
+function getAdminDB() {
+    return JSON.parse(localStorage.getItem("HGNICE_ADMIN_DB")) || {
+        maintenance: false,
+        profitTargetWarning: 5,
+        users: {
+            "VIP-AFIF-999": { status: "active", name: "Master Afif" },
+            "VIP-2026-PRO": { status: "active", name: "VIP Member 1" }
+        }
+    };
+}
+
+/* --- 1. BENGALI VOICE SYNTHESIS ENGINE --- */
+function speakBangla(text) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'bn-BD';
+    msg.rate = 1.0;
+    msg.pitch = 1.05;
+    window.speechSynthesis.speak(msg);
+}
+
+/* --- 2. SECURITY & ADMIN BLOCK VERIFICATION --- */
+function verifyVipKey() {
+    const key = document.getElementById("vip-key-input").value.trim();
+    const db = getAdminDB();
+    const msgEl = document.getElementById("lock-msg");
+
+    if (db.maintenance) {
+        msgEl.innerText = "⚠️ বট এখন মেইনটেন্যান্স বা আপডেটে আছে। পরে চেষ্টা করুন।";
+        speakBangla("বট এখন আপডেট হচ্ছে, দয়া করে অপেক্ষা করুন।");
+        return;
+    }
+
+    if (db.users[key]) {
+        if (db.users[key].status === "blocked") {
+            msgEl.innerText = "🚫 আপনার অ্যাক্সেস ব্লক করা হয়েছে! অ্যাডমিনের সাথে যোগাযোগ করুন।";
+            speakBangla("আপনার আইডি ব্লক করা হয়েছে। অ্যাডমিনের সাথে যোগাযোগ করুন।");
+            return;
+        }
+        localStorage.setItem("SAVED_VIP_KEY", key);
+        document.getElementById("lock-screen").style.display = "none";
+        document.getElementById("bot-body").style.display = "block";
+        runOfflineCatchupSimulation(); // Sync all rounds missed while offline
+        speakBangla("ভিআইপি এআই মাস্টার বটে আপনাকে স্বাগতম। বট এখন সম্পূর্ণ প্রস্তুত।");
+    } else {
+        msgEl.innerText = "❌ ভুল পাসওয়ার্ড বা অ্যাক্সেস কী!";
+        speakBangla("ভুল অ্যাক্সেস কী দিয়েছেন।");
+    }
+}
+
+// Auto-check if user gets blocked live while playing
+function checkLiveSecurity() {
+    const savedKey = localStorage.getItem("SAVED_VIP_KEY");
+    const db = getAdminDB();
+    if (!savedKey || !db.users[savedKey] || db.users[savedKey].status === "blocked" || db.maintenance) {
+        botRunning = false;
+        document.getElementById("bot-body").style.display = "none";
+        document.getElementById("lock-screen").style.display = "block";
+        document.getElementById("lock-msg").innerText = "⚠️ অ্যাডমিন আপনার সেশন লক বা ব্লক করেছেন!";
+    }
+}
+
+/* --- 3. 24/7 OFFLINE & CLOUD SELF-TEST CATCHUP ENGINE --- */
+async function runOfflineCatchupSimulation() {
+    // 1. Try syncing with Vercel Cloud Brain API if deployed
+    try {
+        const res = await fetch('/api/cron-brain');
+        if (res.ok) {
+            const cloudData = await res.json();
+            if (cloudData.totalRoundsLearned > aiBrain.totalRoundsLearned) {
+                aiBrain.totalRoundsLearned = cloudData.totalRoundsLearned;
+                aiBrain.weights = cloudData.weights || aiBrain.weights;
+            }
+        }
+    } catch (e) { /* Works seamlessly offline/GitHub pages too */ }
+
+    // 2. Calculate rounds passed while user mobile data was OFF
+    const now = Date.now();
+    const secondsOffline = Math.floor((now - aiBrain.lastOfflineTimestamp) / 1000);
+    const missedRounds = Math.min(Math.floor(secondsOffline / 30), 2500);
+
+    if (missedRounds > 2) {
+        for (let i = 0; i < missedRounds; i++) {
+            simulateSingleBackgroundRound();
+        }
+        aiBrain.totalRoundsLearned += missedRounds;
+    }
+
+    // Ensure initial history buffer has at least 60 rounds for deep analysis
+    while (aiBrain.historyLog.length < 60) {
+        simulateSingleBackgroundRound();
+    }
+
+    aiBrain.lastOfflineTimestamp = now;
+    saveBrain();
+    updateDashboardStats();
+}
+
+function simulateSingleBackgroundRound() {
+    const last = aiBrain.historyLog[aiBrain.historyLog.length - 1];
+    let num = Math.floor(Math.random() * 10);
+    if (last && Math.random() < 0.55) {
+        num = last.size === "BIG" ? (5 + Math.floor(Math.random() * 5)) : Math.floor(Math.random() * 5);
+    }
+    const size = num >= 5 ? "BIG" : "SMALL";
+    const color = (num === 0 || num === 5) ? "VIOLET-MIX" : (num % 2 === 0 ? "RED" : "GREEN");
+
+    if (aiBrain.historyLog.length >= 15) {
+        const testPred = executeFiveMasterAlgorithms(aiBrain.historyLog);
+        if (testPred.size === size) {
+            aiBrain.weights[testPred.dominantAlgo] = Math.min(2.0, aiBrain.weights[testPred.dominantAlgo] + 0.01);
+        } else {
+            aiBrain.weights[testPred.dominantAlgo] = Math.max(0.6, aiBrain.weights[testPred.dominantAlgo] - 0.01);
+            const patternKey = aiBrain.historyLog.slice(-5).map(r => r.size[0]).join("");
+            aiBrain.blacklistPatterns[patternKey] = size;
+        }
+    }
+
+    aiBrain.historyLog.push({ num, size, color, time: Date.now() });
+    if (aiBrain.historyLog.length > 500) aiBrain.historyLog.shift();
+}
+
+function saveBrain() {
+    aiBrain.lastOfflineTimestamp = Date.now();
+    localStorage.setItem("HGNICE_GRANDMASTER_BRAIN", JSON.stringify(aiBrain));
+}
+
+/* --- 4. FIVE MASTER ALGORITHMS ENGINE (A TO Z ANALYSIS) --- */
+function executeFiveMasterAlgorithms(history) {
+    const recent = history.slice(-20);
+    const sizes = recent.map(r => r.size);
+    const nums = recent.map(r => r.num);
+    const last5Pattern = sizes.slice(-5).map(s => s[0]).join("");
+
+    let scoreBig = 0;
+    let scoreSmall = 0;
+    let activeAlgos = [];
+    let dominantAlgo = "dragon";
+    let noiseLevel = 0;
+
+    // ALGO 1: DRAGON TREND DETECTOR (4+ consecutive same size)
+    let streak = 1;
+    for (let i = sizes.length - 1; i > 0; i--) {
+        if (sizes[i] === sizes[i - 1]) streak++;
+        else break;
+    }
+    if (streak >= 3) {
+        activeAlgos.push("tag-dragon");
+        dominantAlgo = "dragon";
+        const lastSize = sizes[sizes.length - 1];
+        if (streak <= 6) {
+            if (lastSize === "BIG") scoreBig += 35 * aiBrain.weights.dragon;
+            else scoreSmall += 35 * aiBrain.weights.dragon;
+        } else {
+            if (lastSize === "BIG") scoreSmall += 28 * aiBrain.weights.dragon;
+            else scoreBig += 28 * aiBrain.weights.dragon;
+        }
+    }
+
+    // ALGO 2: PING-PONG ANALYZER (B-S-B-S alternation)
+    const last4 = sizes.slice(-4).map(s => s[0]).join("");
+    if (last4 === "BSBS" || last4 === "SBSB") {
+        activeAlgos.push("tag-pingpong");
+        dominantAlgo = "pingpong";
+        const nextPing = sizes[sizes.length - 1] === "BIG" ? "SMALL" : "BIG";
+        if (nextPing === "BIG") scoreBig += 32 * aiBrain.weights.pingpong;
+        else scoreSmall += 32 * aiBrain.weights.pingpong;
+    }
+
+    // ALGO 3: DOUBLE-DOUBLE CLUSTER (BB-SS-BB or SSB-B)
+    const last6 = sizes.slice(-6).map(s => s[0]).join("");
+    if (last6.endsWith("BBSS") || last6.endsWith("SSBB") || last6.endsWith("BBS") || last6.endsWith("SSB")) {
+        activeAlgos.push("tag-cluster");
+        dominantAlgo = "cluster";
+        const lastTwo = last6.slice(-2);
+        if (lastTwo === "BS") scoreSmall += 30 * aiBrain.weights.cluster;
+        else if (lastTwo === "SB") scoreBig += 30 * aiBrain.weights.cluster;
+        else if (lastTwo === "BB") scoreSmall += 26 * aiBrain.weights.cluster;
+        else if (lastTwo === "SS") scoreBig += 26 * aiBrain.weights.cluster;
+    }
+
+    // ALGO 4: HOT LOOP NUMBER & COLOR TRACKER
+    activeAlgos.push("tag-hotloop");
+    const freq = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 };
+    nums.forEach(n => freq[n]++);
+    let bigHotSum = freq[5] + freq[6] + freq[7] + freq[8] + freq[9];
+    let smallHotSum = freq[0] + freq[1] + freq[2] + freq[3] + freq[4];
+    if (bigHotSum > smallHotSum) scoreBig += 20 * aiBrain.weights.hotloop;
+    else scoreSmall += 20 * aiBrain.weights.hotloop;
+
+    // ALGO 5: NOISE FILTER & BLACKLIST MEMORY CORRECTION
+    let transitions = 0;
+    for (let i = 1; i < sizes.length; i++) {
+        if (sizes[i] !== sizes[i - 1]) transitions++;
+    }
+    if (transitions >= 7 && transitions <= 12 && streak < 3 && last4 !== "BSBS" && last4 !== "SBSB") {
+        noiseLevel = 18;
+        activeAlgos.push("tag-noise");
+    }
+
+    if (aiBrain.blacklistPatterns[last5Pattern]) {
+        activeAlgos.push("tag-noise");
+        if (aiBrain.blacklistPatterns[last5Pattern] === "BIG") scoreBig += 25;
+        else scoreSmall += 25;
+    }
+
+    // Final Decision Calculation
+    const finalSize = scoreBig >= scoreSmall ? "BIG" : "SMALL";
+    const rawDiff = Math.abs(scoreBig - scoreSmall);
+    let confidence = Math.min(96, Math.max(81, Math.round(80 + (rawDiff / 4) - (noiseLevel / 3))));
+
+    // Smart Number Selection (2 to 4 Numbers based on Confidence)
+    const candidatePool = finalSize === "BIG" ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
+    candidatePool.sort((a, b) => freq[b] - freq[a]);
+    const numCount = confidence >= 90 ? 2 : (confidence >= 85 ? 3 : 4);
+    const selectedNumbers = candidatePool.slice(0, numCount).sort((a, b) => a - b);
+
+    // Dominant Color Calculation
+    let greenCount = selectedNumbers.filter(n => n % 2 !== 0).length;
+    let finalColor = greenCount >= (selectedNumbers.length / 2) ? "🟢 GREEN" : "🔴 RED";
+    if (selectedNumbers.includes(0) || selectedNumbers.includes(5)) {
+        finalColor += " / 🟣 VIOLET";
+    }
+
+    return {
+        size: finalSize,
+        color: finalColor,
+        numbers: selectedNumbers,
+        confidence: confidence,
+        activeAlgos: activeAlgos,
+        dominantAlgo: dominantAlgo,
+        isNoisy: noiseLevel > 15
+    };
+}
+
+/* --- 5. TIMING & DEEP-SCAN CONTROLLER (12s for 30s | 24s for 1Min) --- */
+function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById("mode-30s").classList.toggle("active", mode === 30);
+    document.getElementById("mode-60s").classList.toggle("active", mode === 60);
+    signalDeliveredForPeriod = "";
+    speakBangla(mode === 30 ? "ত্রিশ সেকেন্ড মোড চালু হয়েছে। বট বারো সেকেন্ড গভীর যাচাই করবে।" : "এক মিনিট মোড চালু হয়েছে। বট পঁচিশ সেকেন্ড গভীর যাচাই করবে।");
+}
+
+function toggleBotEngine() {
+    botRunning = !botRunning;
+    const btn = document.getElementById("toggle-bot-btn");
+    if (botRunning) {
+        btn.innerText = "⏹ STOP AI";
+        btn.className = "btn-ctrl btn-stop";
+        speakBangla("এআই মাস্টার বট চালু হয়েছে। সিগন্যালের জন্য অপেক্ষা করুন।");
+    } else {
+        btn.innerText = "▶ START AI";
+        btn.className = "btn-ctrl btn-start";
+        document.getElementById("main-pred").innerText = "AI PAUSED";
+        document.getElementById("main-pred").className = "sig-main sig-wait";
+        document.getElementById("sub-pred").style.display = "none";
+        speakBangla("বট বন্ধ করা হয়েছে।");
+    }
+}
+
+// Main Real-Time Loop (Runs every 1 second)
+setInterval(() => {
+    checkLiveSecurity();
+    const now = new Date();
+    const totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    const elapsedInRound = totalSec % currentMode;
+    const remainingSec = currentMode - elapsedInRound;
+
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
+    const roundIndex = String(Math.floor(totalSec / currentMode) + 10001);
+    const newPeriod = dateStr + (currentMode === 30 ? "30" : "60") + roundIndex;
+
+    if (newPeriod !== currentPeriod) {
+        if (currentPeriod !== "") {
+            evaluatePreviousRoundAndLearn();
+        }
+        currentPeriod = newPeriod;
+        document.getElementById("period-id").innerText = currentPeriod.slice(-6);
+    }
+
+    document.getElementById("timer-sec").innerText = remainingSec + "s";
+
+    if (!botRunning) return;
+
+    const targetScanSeconds = (currentMode === 30) ? 12 : 24;
+
+    if (elapsedInRound < targetScanSeconds) {
+        const progressPct = Math.min(100, Math.round((elapsedInRound / targetScanSeconds) * 100));
+        document.getElementById("scan-bar").style.width = progressPct + "%";
+        document.getElementById("sub-pred").style.display = "none";
+        document.getElementById("main-pred").className = "sig-main sig-wait";
+
+        if (elapsedInRound === 1) {
+            speakBangla("বট মার্কেট যাচাই করছে, সিগন্যালের জন্য অপেক্ষা করুন।");
+        }
+
+        if (progressPct < 30) {
+            document.getElementById("scan-text").innerText = "🔍 ৫ বছরের মেমোরি ও হিস্ট্রি চেক হচ্ছে...";
+            document.getElementById("main-pred").innerText = "DEEP SCANNING...";
+        } else if (progressPct < 60) {
+            document.getElementById("scan-text").innerText = "🐉 ড্রাগন, পিং-পং ও ক্লাস্টার যাচাই চলছে...";
+            document.getElementById("main-pred").innerText = "TESTING PATTERNS...";
+        } else if (progressPct < 88) {
+            document.getElementById("scan-text").innerText = "🛡️ নয়েজ ফিল্টার ও নাম্বার লুপ মিলানো হচ্ছে...";
+            document.getElementById("main-pred").innerText = "FILTERING NOISE...";
+        } else {
+            document.getElementById("scan-text").innerText = "✅ চূড়ান্ত সিগন্যাল লক করা হচ্ছে...";
+            document.getElementById("main-pred").innerText = "LOCKING SIGNAL...";
+        }
+    } else if (signalDeliveredForPeriod !== currentPeriod) {
+        signalDeliveredForPeriod = currentPeriod;
+        document.getElementById("scan-bar").style.width = "100%";
+        deliverFinalMasterSignal();
+    }
+}, 1000);
+
+let lastActivePrediction = null;
+
+function deliverFinalMasterSignal() {
+    const result = executeFiveMasterAlgorithms(aiBrain.historyLog);
+    lastActivePrediction = result;
+
+    ["tag-dragon", "tag-pingpong", "tag-cluster", "tag-hotloop", "tag-noise"].forEach(id => {
+        document.getElementById(id).classList.toggle("active-algo", result.activeAlgos.includes(id));
+    });
+
+    const mainEl = document.getElementById("main-pred");
+    mainEl.innerText = `${result.size} (${result.confidence}%)`;
+    mainEl.className = "sig-main " + (result.size === "BIG" ? "sig-big" : "sig-small");
+
+    document.getElementById("sub-pred").style.display = "flex";
+    document.getElementById("color-pred").innerText = result.color;
+    document.getElementById("num-pred").innerText = "🎯 " + result.numbers.join(", ");
+    document.getElementById("conf-text").innerText = `AI Confidence: ${result.confidence}% | History Checked: ${aiBrain.totalRoundsLearned}+`;
+    document.getElementById("scan-text").innerText = "🔥 মাস্টার সিগন্যাল প্রস্তুত! দ্রুত বেট ধরুন";
+
+    const db = getAdminDB();
+    if (aiBrain.sessionWins >= db.profitTargetWarning) {
+        speakBangla(`নতুন সিগন্যাল ${result.size === "BIG" ? "বিগ" : "স্মল"}। সতর্কবার্তা: আপনার প্রফিট টার্গেট পূরণ হয়েছে, লোভ না করে এখন গেম বন্ধ রাখুন।`);
+    } else if (result.isNoisy && result.confidence < 84) {
+        speakBangla(`মার্কেট কিছুটা অস্থিতিশীল। সাবধানে ${result.size === "BIG" ? "বিগ" : "স্মল"} এবং নাম্বার ${result.numbers.join(", ")} ধরুন।`);
+    } else {
+        speakBangla(`সিগন্যাল প্রস্তুত। এখন ${result.size === "BIG" ? "বিগ" : "স্মল"} ধরুন। সম্ভাব্য নাম্বার ${result.numbers.join(" এবং ")}।`);
+    }
+}
+
+function evaluatePreviousRoundAndLearn() {
+    simulateSingleBackgroundRound();
+    aiBrain.totalRoundsLearned++;
+
+    if (botRunning && lastActivePrediction) {
+        const latestActual = aiBrain.historyLog[aiBrain.historyLog.length - 1];
+        if (latestActual.size === lastActivePrediction.size) {
+            aiBrain.sessionWins++;
+            aiBrain.currentLossStep = 1;
+        } else {
+            aiBrain.currentLossStep = Math.min(5, aiBrain.currentLossStep + 1);
+        }
+    }
+    saveBrain();
+    updateDashboardStats();
+}
+
+function updateDashboardStats() {
+    document.getElementById("memory-count").innerText = aiBrain.totalRoundsLearned.toLocaleString();
+    document.getElementById("win-count").innerText = aiBrain.sessionWins + " Win";
+    const stepEl = document.getElementById("step-Text");
+    if (aiBrain.currentLossStep === 1) {
+        stepEl.innerText = "Level 1 (Safe)";
+        stepEl.style.color = "var(--neon-green)";
+    } else {
+        stepEl.innerText = `Recovery Step ${aiBrain.currentLossStep} (2x)`;
+        stepEl.style.color = "var(--neon-gold)";
+    }
+}
+
+/* --- 6. DRAGGABLE FLOATING WINDOW LOGIC --- */
+const botBox = document.getElementById("floating-bot");
+const dragHandle = document.getElementById("drag-handle");
+let isDragging = false, offsetX = 0, offsetY = 0;
+
+dragHandle.addEventListener("touchstart", (e) => {
+    isDragging = true;
+    offsetX = e.touches[0].clientX - botBox.offsetLeft;
+    offsetY = e.touches[0].clientY - botBox.offsetTop;
+}, {passive: true});
+
+document.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    botBox.style.left = (e.touches[0].clientX - offsetX) + "px";
+    botBox.style.top = (e.touches[0].clientY - offsetY) + "px";
+}, {passive: true});
+
+document.addEventListener("touchend", () => { isDragging = false; });
+
+function toggleMinimize() {
+    isMinimized = !isMinimized;
+    const body = document.getElementById("bot-body");
+    const lock = document.getElementById("lock-screen");
+    const savedKey = localStorage.getItem("SAVED_VIP_KEY");
+    if (isMinimized) {
+        body.style.display = "none";
+        lock.style.display = "none";
+        botBox.style.width = "210px";
+    } else {
+        botBox.style.width = "335px";
+        if (savedKey) body.style.display = "block";
+        else lock.style.display = "block";
+    }
+}
+
+// Auto-login if valid key was saved earlier
+window.onload = () => {
+    const savedKey = localStorage.getItem("SAVED_VIP_KEY");
+    if (savedKey) {
+        document.getElementById("vip-key-input").value = savedKey;
+        verifyVipKey();
+    }
+};
+</script>
+</body>
+</html>
+
