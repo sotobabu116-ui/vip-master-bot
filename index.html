@@ -1,352 +1,522 @@
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HGNICE VIP AI GRANDMASTER</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
-        #game-frame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HGNICE MASTER MEMORY AI</title>
 
-        #ai-bot-window {
-            position: fixed; top: 110px; left: 10px; width: 275px;
-            background: rgba(10, 14, 23, 0.97);
-            border: 2px solid #00f2fe; border-radius: 16px;
-            box-shadow: 0 0 30px rgba(0, 242, 254, 0.4);
-            color: #fff; z-index: 99999; overflow: hidden;
-            backdrop-filter: blur(12px);
-        }
-
-        .bot-header {
-            background: linear-gradient(90deg, #090d16, #1e293b);
-            padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(0, 242, 254, 0.3); cursor: move;
-        }
-        .bot-title { font-size: 11px; font-weight: 900; color: #facc15; display: flex; align-items: center; gap: 6px; }
-        .live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 8px #22c55e; animation: pulse 1s infinite; }
-        @keyframes pulse { 50% { opacity: 0.3; } }
-        .hdr-btns { display: flex; gap: 5px; }
-        .hdr-btn { background: #334155; color: #fff; border: none; border-radius: 5px; width: 22px; height: 22px; font-size: 11px; font-weight: bold; cursor: pointer; }
-
-        .bot-body { padding: 10px; }
-
-        /* Auth Screen */
-        #auth-screen { text-align: center; padding: 10px 5px; }
-        .auth-title { font-size: 12px; color: #facc15; font-weight: bold; margin-bottom: 6px; }
-        .key-input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #334155; background: #090d16; color: #00f2fe; text-align: center; font-weight: bold; font-size: 12px; margin-bottom: 8px; outline: none; }
-        .unlock-btn { width: 100%; padding: 8px; border-radius: 8px; border: none; background: linear-gradient(90deg, #00f2fe, #38bdf8); color: #000; font-weight: 800; font-size: 12px; cursor: pointer; }
-        .auth-links { margin-top: 8px; font-size: 10px; }
-        .auth-links a { color: #38bdf8; text-decoration: none; font-weight: bold; }
-
-        /* Mode Switch */
-        .mode-row { display: flex; gap: 6px; margin-bottom: 8px; }
-        .mode-btn { flex: 1; padding: 6px; font-size: 10px; font-weight: bold; background: #111827; color: #94a3b8; border: 1px solid #374151; border-radius: 8px; cursor: pointer; text-align: center; }
-        .mode-btn.active { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
-
-        /* Clean Info Grid */
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: #070a12; padding: 6px 8px; border-radius: 8px; border: 1px solid #1e293b; font-size: 10px; margin-bottom: 8px; color: #cbd5e1; }
-        .info-grid span { color: #38bdf8; font-weight: bold; }
-        .gold { color: #facc15; }
-
-        /* Big Clean Signal Box */
-        .sig-card { background: #070a12; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; text-align: center; margin-bottom: 8px; }
-        .sig-status { font-size: 10px; color: #facc15; margin-bottom: 6px; font-weight: bold; }
-        .progress-bar { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
-        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #00f2fe); transition: width 1s linear; }
-        
-        .main-sig { font-size: 26px; font-weight: 900; letter-spacing: 1px; margin: 4px 0; color: #facc15; text-shadow: 0 0 15px rgba(250, 204, 21, 0.5); }
-        .sub-sig { font-size: 11px; font-weight: bold; color: #fff; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 4px; }
-        .num-badge { background: #1e1b4b; border: 1px solid #f59e0b; color: #facc15; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
-
-        /* Fully Automatic Status Bar */
-        .auto-bar {
-            background: #111827; border: 1px solid #1f2937; border-radius: 8px;
-            padding: 7px 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 10px;
-        }
-        .auto-stat { color: #cbd5e1; font-weight: bold; }
-        .auto-stat span { color: #22c55e; }
-        .auto-stat .err { color: #ef4444; }
-
-        .action-row { display: flex; gap: 6px; }
-        .act-btn { flex: 1; padding: 7px; border: none; border-radius: 7px; font-weight: bold; font-size: 11px; cursor: pointer; color: #fff; }
-        .btn-stop { background: linear-gradient(90deg, #dc2626, #ef4444); }
-        .btn-sup { background: linear-gradient(90deg, #0284c7, #0ea5e9); text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; }
-    </style>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,sans-serif}
+body{background:#030712;color:white;min-height:100vh;padding:12px}
+button,input{font:inherit}
+#app{max-width:430px;margin:auto}
+.header{
+ background:linear-gradient(120deg,#111827,#172554);
+ border:1px solid #0891b2;border-radius:14px;
+ padding:16px;margin-bottom:12px;
+ box-shadow:0 0 20px #0891b233
+}
+.title{color:#facc15;font-size:18px;font-weight:900}
+.subtitle{color:#94a3b8;font-size:11px;margin-top:5px}
+.status{font-size:11px;color:#22c55e;margin-top:10px}
+.card{
+ background:#0b1220;border:1px solid #263449;
+ border-radius:12px;padding:13px;margin-bottom:11px
+}
+.heading{font-size:13px;color:#38bdf8;font-weight:800;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{
+ background:#111c2d;border:1px solid #263449;
+ border-radius:9px;padding:12px
+}
+.stat small{font-size:10px;color:#94a3b8}
+.stat strong{display:block;font-size:21px;margin-top:5px}
+.green{color:#22c55e}
+.red{color:#f87171}
+.yellow{color:#facc15}
+.blue{color:#38bdf8}
+input{
+ width:100%;padding:11px;background:#050b16;
+ border:1px solid #334155;border-radius:8px;
+ color:white;outline:none;margin-bottom:9px
+}
+button{
+ border:0;border-radius:8px;padding:10px;
+ font-weight:800;cursor:pointer
+}
+.primary{background:linear-gradient(90deg,#0284c7,#06b6d4);color:white;width:100%}
+.secondary{background:#1e293b;color:white}
+.danger{background:#991b1b;color:white}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bar{height:8px;background:#1e293b;border-radius:8px;overflow:hidden;margin:8px 0}
+.fill{height:100%;background:#22c55e;transition:width .3s}
+.row{display:flex;justify-content:space-between;gap:8px;font-size:11px;padding:7px 0;border-bottom:1px solid #1e293b}
+.row:last-child{border:0}
+.badge{padding:3px 7px;border-radius:5px;background:#172554;color:#60a5fa}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th,td{text-align:center;padding:9px 3px;border-bottom:1px solid #263449}
+th{color:#38bdf8}
+.empty{text-align:center;color:#64748b;padding:18px;font-size:12px}
+.note{font-size:10px;color:#94a3b8;line-height:1.7}
+.footer{text-align:center;color:#64748b;font-size:10px;padding:12px}
+</style>
 </head>
+
 <body>
+<div id="app">
 
-    <iframe id="game-frame" src="https://hgnice.bet/#/register?invitationCode=732171626890"></iframe>
+<div class="header">
+ <div class="title">⚡ HGNICE MASTER AI</div>
+ <div class="subtitle">ADVANCED REAL MEMORY & STATISTICS SYSTEM</div>
+ <div class="status" id="dbStatus">● DATABASE CONNECTING...</div>
+</div>
 
-    <div id="ai-bot-window">
-        <div class="bot-header" id="drag-handle">
-            <div class="bot-title"><span class="live-dot"></span> HGNICE AI GRANDMASTER</div>
-            <div class="hdr-btns">
-                <button class="hdr-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
-                <button class="hdr-btn" onclick="toggleMin()">-</button>
-            </div>
-        </div>
+<div class="card">
+ <div class="heading">📊 REAL MEMORY OVERVIEW</div>
+ <div class="grid">
+  <div class="stat">
+   <small>TOTAL RESULTS</small>
+   <strong class="blue" id="total">0</strong>
+  </div>
+  <div class="stat">
+   <small>MEMORY STATUS</small>
+   <strong class="green" id="memory">READY</strong>
+  </div>
+  <div class="stat">
+   <small>BIG RESULTS</small>
+   <strong class="yellow" id="big">0</strong>
+  </div>
+  <div class="stat">
+   <small>SMALL RESULTS</small>
+   <strong class="blue" id="small">0</strong>
+  </div>
+ </div>
+</div>
 
-        <div class="bot-body" id="bot-content">
-            <!-- Auth Screen -->
-            <div id="auth-screen">
-                <div class="auth-title">🔒 VIP মেম্বারশিপ ভেরিফিকেশন</div>
-                <input type="text" id="vip-key-input" class="key-input" placeholder="Enter VIP Key...">
-                <button class="unlock-btn" onclick="verifyKey()">আনলক করুন</button>
-                <div id="auth-msg" style="font-size:10px; color:#ef4444; margin-top:5px; display:none;"></div>
-                <div class="auth-links">
-                    <a href="https://t.me/Afif_abdullah_xo" target="_blank">📩 Key নিতে টেলিগ্রাম করুন</a>
-                </div>
-            </div>
+<div class="card">
+ <div class="heading">➕ ADD REAL GAME RESULT</div>
+ <input id="period" placeholder="Enter Period ID">
+ <input id="digit" type="number" min="0" max="9"
+        placeholder="Enter Actual Result (0-9)">
+ <button class="primary" id="addBtn">SAVE REAL RESULT</button>
+ <p class="note" style="margin-top:10px">
+   শুধুমাত্র যাচাই করা প্রকৃত Result যোগ করবে।
+   একই Period একাধিকবার যোগ করা যাবে না।
+ </p>
+</div>
 
-            <!-- Main Dashboard -->
-            <div id="ai-dashboard" style="display:none;">
-                <div class="mode-row">
-                    <div id="mode-30" class="mode-btn active" onclick="switchMode(30)">⚡ WinGo 30s</div>
-                    <div id="mode-60" class="mode-btn" onclick="switchMode(60)">⏱️ WinGo 1Min</div>
-                </div>
+<div class="card">
+ <div class="heading">📈 HISTORICAL STATISTICS</div>
 
-                <div class="info-grid">
-                    <div>পিরিয়ড: <span id="period-id">-----</span></div>
-                    <div>টাইমার: <span id="timer-sec" class="gold">--s</span></div>
-                    <div>হাই একুরেসি: <span style="color:#22c55e;">Enabled</span></div>
-                    <div>লেভেল: <span class="gold" id="lvl-display">Level 1 (High)</span></div>
-                </div>
+ <div class="row">
+  <span>Big Percentage</span>
+  <strong class="yellow" id="bigPct">0%</strong>
+ </div>
+ <div class="bar"><div class="fill" id="bigBar"></div></div>
 
-                <div class="sig-card">
-                    <div class="sig-status" id="sig-status-text">⏳ ডিপ এনালাইসিস চলছে...</div>
-                    <div class="progress-bar"><div class="progress-fill" id="scan-bar"></div></div>
-                    <div class="main-sig" id="main-sig-text">ANALYZING</div>
-                    <div class="sub-sig" id="sub-sig-text">
-                        <span id="color-txt">রং স্ক্যান হচ্ছে...</span> <span class="num-badge" id="num-badge">🎯 --</span>
-                    </div>
-                </div>
+ <div class="row">
+  <span>Small Percentage</span>
+  <strong class="blue" id="smallPct">0%</strong>
+ </div>
+ <div class="bar"><div class="fill" id="smallBar"
+ style="background:#38bdf8"></div></div>
+</div>
 
-                <div class="auto-bar">
-                    <div class="auto-stat">Auto Judge: <span id="last-result-status">⏳ অপেক্ষা করছে...</span></div>
-                    <div class="auto-stat">Score: <span id="win-loss-ratio">✅ 0 | ❌ 0</span></div>
-                </div>
+<div class="card">
+ <div class="heading">🧠 ROLLING MEMORY ANALYSIS</div>
+ <div id="windows"></div>
+</div>
 
-                <div class="action-row">
-                    <button id="toggle-ai-btn" class="act-btn btn-stop" onclick="toggleAI()">⏹ STOP AI</button>
-                    <a href="https://t.me/Afif_abdullah_xo" target="_blank" class="act-btn btn-sup">✈️ সাপোর্ট</a>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="card">
+ <div class="heading">🔢 NUMBER FREQUENCY (0-9)</div>
+ <div class="grid" id="frequency"></div>
+</div>
+
+<div class="card">
+ <div class="heading">📜 RECENT REAL RESULTS</div>
+ <div style="overflow-x:auto">
+ <table>
+  <thead>
+   <tr>
+    <th>Period</th>
+    <th>Number</th>
+    <th>Type</th>
+    <th>Time</th>
+   </tr>
+  </thead>
+  <tbody id="history">
+   <tr><td colspan="4" class="empty">No Data Available</td></tr>
+  </tbody>
+ </table>
+ </div>
+</div>
+
+<div class="card">
+ <div class="heading">🛠️ DATA MANAGEMENT</div>
+ <div class="actions">
+  <button class="secondary" id="exportBtn">📥 EXPORT CSV</button>
+  <button class="secondary" id="backupBtn">💾 BACKUP JSON</button>
+  <button class="secondary" id="importBtn">📂 IMPORT JSON</button>
+  <button class="danger" id="clearBtn">🗑 CLEAR DATA</button>
+ </div>
+ <input type="file" id="fileInput" accept=".json" hidden>
+</div>
+
+<div class="card">
+ <div class="heading">🔍 DATA INTEGRITY</div>
+ <div class="row">
+  <span>Duplicate Periods</span>
+  <strong class="green">0</strong>
+ </div>
+ <div class="row">
+  <span>Invalid Results</span>
+  <strong class="green">0</strong>
+ </div>
+ <div class="row">
+  <span>Accuracy</span>
+  <strong class="yellow">N/A</strong>
+ </div>
+ <p class="note" style="margin-top:10px">
+ Accuracy N/A: কোনো পূর্বাভাসের স্বাধীন রেকর্ড নেই।
+ শুধু Result-এর Frequency-কে Prediction Accuracy বলা যায় না।
+ </p>
+</div>
+
+<div class="footer">
+ HGNICE MASTER MEMORY SYSTEM • VERSION 2.0
+</div>
+
+</div>
 
 <script>
-    const DEFAULT_KEYS = ["VIP-AFIF-999", "VIP-2026-PRO", "AFIF-MASTER-99"];
-    let aiRunning = true;
-    let isMuted = false;
-    let gameMode = 30;
-    let currentPeriod = "";
-    let activePrediction = null;
+"use strict";
 
-    let autoStats = JSON.parse(localStorage.getItem("hgnice_high_accuracy_stats") || "null");
-    if (!autoStats) {
-        autoStats = { wins: 0, losses: 0, level: 1 };
-        localStorage.setItem("hgnice_high_accuracy_stats", JSON.stringify(autoStats));
-    }
+const DB_NAME = "HGNICE_MASTER_DATABASE";
+const STORE = "results";
+let db = null;
+let records = [];
 
-    function updateStatsUI() {
-        document.getElementById("win-loss-ratio").innerHTML = `<span>✅ ${autoStats.wins}</span> | <span class="err">❌ ${autoStats.losses}</span>`;
-        document.getElementById("lvl-display").innerText = `Level ${autoStats.level} ${autoStats.level === 1 ? '(High)' : '(Ultra)'}`;
-    }
+const $ = id => document.getElementById(id);
 
-    function toggleMute() {
-        isMuted = !isMuted;
-        document.getElementById("mute-btn").innerText = isMuted ? "🔇" : "🔊";
-        if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-    }
+function openDatabase(){
+ return new Promise((resolve,reject)=>{
+  const request = indexedDB.open(DB_NAME,1);
 
-    function speakBn(text) {
-        if (isMuted || !('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'bn-BD';
-        u.rate = 1.0;
-        window.speechSynthesis.speak(u);
-    }
+  request.onupgradeneeded = event=>{
+   const database = event.target.result;
 
-    function verifyKey() {
-        const val = document.getElementById("vip-key-input").value.trim();
-        const savedKeys = JSON.parse(localStorage.getItem("hgnice_vip_keys") || "[]");
-        const blocked = JSON.parse(localStorage.getItem("hgnice_blocked_keys") || "[]");
-        const msg = document.getElementById("auth-msg");
-
-        if (blocked.includes(val)) {
-            msg.style.display = "block";
-            msg.innerText = "⚠️ আপনার অ্যাক্সেস ব্লক করা হয়েছে!";
-            return;
-        }
-        if (DEFAULT_KEYS.includes(val) || savedKeys.includes(val)) {
-            localStorage.setItem("hgnice_active_key", val);
-            document.getElementById("auth-screen").style.display = "none";
-            document.getElementById("ai-dashboard").style.display = "block";
-            updateStatsUI();
-        } else {
-            msg.style.display = "block";
-            msg.innerText = "❌ ভুল VIP Key!";
-        }
-    }
-
-    function switchMode(m) {
-        gameMode = m;
-        document.getElementById("mode-30").className = m === 30 ? "mode-btn active" : "mode-btn";
-        document.getElementById("mode-60").className = m === 60 ? "mode-btn active" : "mode-btn";
-        currentPeriod = "";
-        activePrediction = null;
-    }
-
-    function toggleAI() {
-        aiRunning = !aiRunning;
-        const btn = document.getElementById("toggle-ai-btn");
-        if (aiRunning) {
-            btn.className = "act-btn btn-stop";
-            btn.innerText = "⏹ STOP AI";
-        } else {
-            btn.className = "act-btn btn-start";
-            btn.innerText = "▶ START AI";
-            document.getElementById("sig-status-text").innerText = "⏸️ বট বিরতিতে আছে";
-        }
-    }
-
-    function getLiveGamePeriod() {
-        const now = new Date();
-        const utcSec = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
-        if (gameMode === 30) {
-            const index = Math.floor(utcSec / 30) + 1;
-            const rem = 30 - (utcSec % 30);
-            return { shortPeriod: String(50000 + index), remaining: rem };
-        } else {
-            const index = Math.floor(utcSec / 60) + 1;
-            const rem = 60 - (utcSec % 60);
-            return { shortPeriod: String(10000 + index), remaining: rem };
-        }
-    }
-
-    function getActualOutcome(periodNum) {
-        let x = Math.sin(periodNum * 12.9898 + 78.233) * 43758.5453;
-        let digit = Math.floor((x - Math.floor(x)) * 10);
-        return { digit, isBig: digit >= 5 };
-    }
-
-    // High Accuracy Initial Signal Generator (Always optimized for maximum win rate)
-    function generateSmartSignal(periodNum) {
-        const prev1 = getActualOutcome(periodNum - 1);
-        const prev2 = getActualOutcome(periodNum - 2);
-        const prev3 = getActualOutcome(periodNum - 3);
-
-        // Advanced multi-tier probability calculation for high accuracy right from the start
-        let trendBig = true;
-        const score = (prev1.isBig ? 1 : 0) + (prev2.isBig ? 1 : 0) + (prev3.isBig ? 1 : 0);
-        
-        if (autoStats.level > 1) {
-            // Ultra-strict mode during recovery
-            trendBig = (score <= 1);
-        } else {
-            // Standard High Accuracy Mode from round 1
-            trendBig = (score >= 2 ? false : true);
-            if (periodNum % 2 === 0) trendBig = prev1.isBig;
-        }
-
-        const bigPool = [5, 6, 7, 8, 9];
-        const smallPool = [0, 1, 2, 3, 4];
-        const pool = trendBig ? bigPool : smallPool;
-        const n1 = pool[periodNum % 5];
-        const n2 = pool[(periodNum + 3) % 5];
-        const colorText = (n1 % 2 === 1) ? "🟢 GREEN / 🟣 VIOLET" : "🔴 RED / 🟣 VIOLET";
-
-        return { isBig: trendBig, n1, n2, colorText };
-    }
-
-    setInterval(() => {
-        const live = getLiveGamePeriod();
-        document.getElementById("period-id").innerText = live.shortPeriod;
-        document.getElementById("timer-sec").innerText = live.remaining + "s";
-
-        if (!aiRunning) return;
-
-        if (live.remaining > 18) {
-            document.getElementById("sig-status-text").innerText = "⏳ ডিপ এনালাইসিস চলছে...";
-            document.getElementById("scan-bar").style.width = "40%";
-            document.getElementById("main-sig-text").innerText = "ANALYZING...";
-            document.getElementById("color-txt").innerText = "প্যাটার্ন যাচাই হচ্ছে...";
-            document.getElementById("num-badge").innerText = "🎯 --";
-            return;
-        }
-
-        if (currentPeriod !== live.shortPeriod) {
-            if (activePrediction) {
-                const realOutcome = getActualOutcome(parseInt(activePrediction.period));
-                const isWin = (activePrediction.isBig === realOutcome.isBig);
-
-                if (isWin) {
-                    autoStats.wins += 1;
-                    autoStats.level = 1;
-                    document.getElementById("last-result-status").innerHTML = `<span style="color:#22c55e;">✅ Win (${activePrediction.period.slice(-3)})</span>`;
-                } else {
-                    autoStats.losses += 1;
-                    autoStats.level = Math.min(4, autoStats.level + 1);
-                    document.getElementById("last-result-status").innerHTML = `<span class="err">❌ Loss (Auto)</span>`;
-                }
-                localStorage.setItem("hgnice_high_accuracy_stats", JSON.stringify(autoStats));
-                updateStatsUI();
-            }
-
-            currentPeriod = live.shortPeriod;
-            
-            const pred = generateSmartSignal(parseInt(currentPeriod));
-            activePrediction = { isBig: pred.isBig, period: currentPeriod };
-
-            document.getElementById("sig-status-text").innerText = "🔥 মাস্টার সিগন্যাল প্রস্তুত! বেট ধরুন";
-            document.getElementById("scan-bar").style.width = "100%";
-
-            const mainEl = document.getElementById("main-sig-text");
-            mainEl.innerText = pred.isBig ? "BIG" : "SMALL";
-            mainEl.style.color = pred.isBig ? "#facc15" : "#38bdf8";
-
-            document.getElementById("color-txt").innerText = pred.colorText;
-            document.getElementById("num-badge").innerText = `🎯 ${pred.n1}, ${pred.n2}`;
-
-            speakBn(`পিরিয়ড ${currentPeriod.slice(-3)}, ${pred.isBig ? 'বিগ' : 'স্মল'}`);
-        }
-
-        if (live.remaining <= 5) {
-            document.getElementById("sig-status-text").innerText = "🔒 বেট লক — রেজাল্ট যাচাই হচ্ছে...";
-            document.getElementById("scan-bar").style.width = "15%";
-        }
-    }, 1000);
-
-    const win = document.getElementById("ai-bot-window");
-    const handle = document.getElementById("drag-handle");
-    let isDrag = false, dx = 0, dy = 0;
-
-    handle.addEventListener("touchstart", e => {
-        isDrag = true;
-        dx = e.touches[0].clientX - win.offsetLeft;
-        dy = e.touches[0].clientY - win.offsetTop;
+   if(!database.objectStoreNames.contains(STORE)){
+    const store = database.createObjectStore(STORE,{
+     keyPath:"period"
     });
-    document.addEventListener("touchmove", e => {
-        if (!isDrag) return;
-        win.style.left = (e.touches[0].clientX - dx) + "px";
-        win.style.top = (e.touches[0].clientY - dy) + "px";
-    });
-    document.addEventListener("touchend", () => { isDrag = false; });
+    store.createIndex("timestamp","timestamp");
+   }
+  };
 
-    function toggleMin() {
-        const c = document.getElementById("bot-content");
-        c.style.display = c.style.display === "none" ? "block" : "none";
-    }
+  request.onsuccess = ()=>{
+   db=request.result;
+   resolve(db);
+  };
 
-    window.onload = () => {
-        const saved = localStorage.getItem("hgnice_active_key");
-        if (saved && DEFAULT_KEYS.includes(saved)) {
-            document.getElementById("vip-key-input").value = saved;
-            verifyKey();
-        }
-    };
+  request.onerror = ()=>reject(request.error);
+ });
+}
+
+function transaction(mode,action){
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(STORE,mode);
+  const store=tx.objectStore(STORE);
+
+  let result;
+  try{
+   result=action(store);
+  }catch(error){
+   reject(error);
+   return;
+  }
+
+  tx.oncomplete=()=>resolve(result?.result);
+  tx.onerror=()=>reject(tx.error);
+  tx.onabort=()=>reject(tx.error);
+ });
+}
+
+async function loadData(){
+ records=await new Promise((resolve,reject)=>{
+  const request=db.transaction(STORE,"readonly")
+   .objectStore(STORE).getAll();
+
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+ });
+
+ records.sort((a,b)=>a.timestamp-b.timestamp);
+ render();
+}
+
+async function addResult(){
+ const period=$("period").value.trim();
+ const raw=$("digit").value;
+
+ if(!period || raw===""){
+  alert("Period ID এবং Result দুটোই দিন।");
+  return;
+ }
+
+ const digit=Number(raw);
+
+ if(!Number.isInteger(digit)||digit<0||digit>9){
+  alert("Result অবশ্যই 0 থেকে 9 হতে হবে।");
+  return;
+ }
+
+ if(records.some(r=>r.period===period)){
+  alert("এই Period আগে থেকেই সংরক্ষিত আছে!");
+  return;
+ }
+
+ const result={
+  period,
+  digit,
+  type:digit>=5?"BIG":"SMALL",
+  timestamp:Date.now()
+ };
+
+ try{
+  await transaction("readwrite",store=>{
+   store.add(result);
+  });
+
+  $("period").value="";
+  $("digit").value="";
+
+  await loadData();
+  alert("Real Result সফলভাবে সংরক্ষিত হয়েছে!");
+ }catch(error){
+  if(error.name==="ConstraintError"){
+   alert("Duplicate Period!");
+  }else{
+   alert("Database Error: "+error.message);
+  }
+ }
+}
+
+function percentage(value,total){
+ return total ? ((value/total)*100).toFixed(2):"0.00";
+}
+
+function calculateStats(data){
+ const big=data.filter(x=>x.digit>=5).length;
+ const small=data.length-big;
+
+ return {
+  total:data.length,
+  big,
+  small,
+  bigPct:percentage(big,data.length),
+  smallPct:percentage(small,data.length)
+ };
+}
+
+function render(){
+ const s=calculateStats(records);
+
+ $("total").textContent=s.total;
+ $("big").textContent=s.big;
+ $("small").textContent=s.small;
+ $("bigPct").textContent=s.bigPct+"%";
+ $("smallPct").textContent=s.smallPct+"%";
+
+ $("bigBar").style.width=s.bigPct+"%";
+ $("smallBar").style.width=s.smallPct+"%";
+
+ $("memory").textContent="ACTIVE";
+
+ renderWindows();
+ renderFrequency();
+ renderHistory();
+}
+
+function renderWindows(){
+ const sizes=[50,100,500];
+
+ $("windows").innerHTML=sizes.map(size=>{
+  const data=records.slice(-size);
+  const s=calculateStats(data);
+
+  return `
+   <div class="row">
+    <span>Last ${size} Results
+     <span class="badge">${data.length} Samples</span>
+    </span>
+    <strong class="yellow">${s.bigPct}% BIG</strong>
+   </div>
+   <div class="note">
+    SMALL: ${s.smallPct}% | BIG: ${s.bigPct}%
+   </div>
+  `;
+ }).join("");
+}
+
+function renderFrequency(){
+ const counts=Array(10).fill(0);
+
+ records.forEach(r=>counts[r.digit]++);
+
+ $("frequency").innerHTML=counts.map((n,i)=>`
+  <div class="stat">
+   <small>NUMBER ${i}</small>
+   <strong class="blue">${n}</strong>
+   <small>${percentage(n,records.length)}%</small>
+  </div>
+ `).join("");
+}
+
+function renderHistory(){
+ const recent=records.slice(-20).reverse();
+
+ if(!recent.length){
+  $("history").innerHTML=
+   '<tr><td colspan="4" class="empty">No Data Available</td></tr>';
+  return;
+ }
+
+ $("history").innerHTML=recent.map(r=>`
+  <tr>
+   <td>${escapeHTML(r.period)}</td>
+   <td>${r.digit}</td>
+   <td style="color:${r.digit>=5?'#facc15':'#38bdf8'}">
+    ${r.type}
+   </td>
+   <td>${new Date(r.timestamp).toLocaleTimeString()}</td>
+  </tr>
+ `).join("");
+}
+
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+ })[c]);
+}
+
+function downloadFile(name,content,type){
+ const blob=new Blob([content],{type});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download=name;
+ a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function exportCSV(){
+ const rows=[
+  ["Period","Digit","Type","Timestamp"],
+  ...records.map(r=>[
+   r.period,r.digit,r.type,
+   new Date(r.timestamp).toISOString()
+  ])
+ ];
+
+ const csv=rows.map(row=>row.map(v=>
+  '"'+String(v).replace(/"/g,'""')+'"'
+ ).join(",")).join("\n");
+
+ downloadFile("hgnice-results.csv","\uFEFF"+csv,
+  "text/csv;charset=utf-8");
+}
+
+function backupJSON(){
+ downloadFile(
+  "hgnice-backup.json",
+  JSON.stringify({
+   version:2,
+   exportedAt:new Date().toISOString(),
+   records
+  },null,2),
+  "application/json"
+ );
+}
+
+async function importJSON(file){
+ try{
+  const data=JSON.parse(await file.text());
+
+  if(!data||!Array.isArray(data.records)){
+   throw new Error("Invalid backup format");
+  }
+
+  const seen=new Set(records.map(r=>r.period));
+  const valid=[];
+
+  for(const r of data.records){
+   if(typeof r.period!=="string" ||
+      !Number.isInteger(r.digit) ||
+      r.digit<0 || r.digit>9 ||
+      !Number.isFinite(r.timestamp)){
+    continue;
+   }
+
+   if(seen.has(r.period))continue;
+
+   seen.add(r.period);
+   valid.push({
+    period:r.period,
+    digit:r.digit,
+    type:r.digit>=5?"BIG":"SMALL",
+    timestamp:r.timestamp
+   });
+  }
+
+  for(const r of valid){
+   await transaction("readwrite",store=>store.add(r));
+  }
+
+  await loadData();
+  alert(valid.length+" টি নতুন Result Import হয়েছে।");
+
+ }catch(error){
+  alert("Import Failed: "+error.message);
+ }
+}
+
+async function clearDatabase(){
+ if(!confirm("সব Historical Result মুছে ফেলতে চান?"))return;
+ if(!confirm("এই কাজটি ফিরিয়ে আনা যাবে না। নিশ্চিত?"))return;
+
+ await transaction("readwrite",store=>store.clear());
+ await loadData();
+}
+
+$("addBtn").addEventListener("click",addResult);
+$("exportBtn").addEventListener("click",exportCSV);
+$("backupBtn").addEventListener("click",backupJSON);
+$("clearBtn").addEventListener("click",clearDatabase);
+
+$("importBtn").addEventListener("click",()=>{
+ $("fileInput").click();
+});
+
+$("fileInput").addEventListener("change",async e=>{
+ const file=e.target.files[0];
+ if(file)await importJSON(file);
+ e.target.value="";
+});
+
+async function initialize(){
+ try{
+  await openDatabase();
+  $("dbStatus").textContent="● REAL MEMORY DATABASE CONNECTED";
+  await loadData();
+ }catch(error){
+  $("dbStatus").textContent="● DATABASE ERROR";
+  alert("Browser storage unavailable: "+error.message);
+ }
+}
+
+initialize();
 </script>
 </body>
 </html>
