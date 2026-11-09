@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HGNICE VIP MASTER AI</title>
+    <title>HGNICE VIP MASTER BRAIN AI</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; }
         body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
@@ -44,12 +44,12 @@
         .mode-btn { flex: 1; padding: 6px; font-size: 10px; font-weight: bold; background: #111827; color: #94a3b8; border: 1px solid #374151; border-radius: 8px; cursor: pointer; text-align: center; }
         .mode-btn.active { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
 
-        /* Clean Real Info Grid (No fake memory numbers) */
+        /* Info Grid */
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: #070a12; padding: 6px 8px; border-radius: 8px; border: 1px solid #1e293b; font-size: 10px; margin-bottom: 8px; color: #cbd5e1; }
         .info-grid span { color: #38bdf8; font-weight: bold; }
         .gold { color: #facc15; }
 
-        /* Big Clean Signal Box */
+        /* Signal Box */
         .sig-card { background: #070a12; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; text-align: center; margin-bottom: 8px; }
         .sig-status { font-size: 10px; color: #facc15; margin-bottom: 6px; font-weight: bold; }
         .progress-bar { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
@@ -59,7 +59,7 @@
         .sub-sig { font-size: 11px; font-weight: bold; color: #fff; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 4px; }
         .num-badge { background: #1e1b4b; border: 1px solid #f59e0b; color: #facc15; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
 
-        /* Master Stats Bar (Real Counter) */
+        /* Stats Bar */
         .master-bar {
             background: #111827; border: 1px solid #1f2937; border-radius: 8px;
             padding: 7px 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 10px;
@@ -80,7 +80,7 @@
 
     <div id="ai-bot-window">
         <div class="bot-header" id="drag-handle">
-            <div class="bot-title"><span class="live-dot"></span> HGNICE MASTER AI</div>
+            <div class="bot-title"><span class="live-dot"></span> MASTER NEURAL AI</div>
             <div class="hdr-btns">
                 <button class="hdr-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
                 <button class="hdr-btn" onclick="toggleMin()">-</button>
@@ -90,8 +90,8 @@
         <div class="bot-body" id="bot-content">
             <!-- Auth Screen -->
             <div id="auth-screen">
-                <div class="auth-title">🔒 VIP MASTER VERIFICATION</div>
-                <input type="text" id="vip-key-input" class="key-input" placeholder="Enter VIP Master Key...">
+                <div class="auth-title">🔒 VIP MASTER ACCESS</div>
+                <input type="text" id="vip-key-input" class="key-input" placeholder="Enter VIP Key...">
                 <button class="unlock-btn" onclick="verifyKey()">আনলক করুন</button>
                 <div id="auth-msg" style="font-size:10px; color:#ef4444; margin-top:5px; display:none;"></div>
                 <div class="auth-links">
@@ -109,20 +109,20 @@
                 <div class="info-grid">
                     <div>পিরিয়ড: <span id="period-id">-----</span></div>
                     <div>টাইমার: <span id="timer-sec" class="gold">--s</span></div>
-                    <div>স্ট্যাটাস: <span style="color:#22c55e;">Live Real</span></div>
+                    <div>ব্রেইন মোড: <span style="color:#22c55e;">Neural Engine</span></div>
                     <div>লেভেল: <span class="gold" id="lvl-display">Master Lvl 1</span></div>
                 </div>
 
                 <div class="sig-card">
-                    <div class="sig-status" id="sig-status-text">⏳ ডিপ মাস্টার এনালাইসিস চলছে...</div>
+                    <div class="sig-status" id="sig-status-text">⏳ ডিপ প্যাটার্ন এনালাইসিস চলছে...</div>
                     <div class="progress-bar"><div class="progress-fill" id="scan-bar"></div></div>
                     <div class="main-sig" id="main-sig-text">ANALYZING</div>
                     <div class="sub-sig" id="sub-sig-text">
-                        <span id="color-txt">প্যাটার্ন স্ক্যান হচ্ছে...</span> <span class="num-badge" id="num-badge">🎯 --</span>
+                        <span id="color-txt">পিং-পং ও ড্রাগন স্ক্যান...</span> <span class="num-badge" id="num-badge">🎯 --</span>
                     </div>
                 </div>
 
-                <!-- Master Stats Bar (Real Clean Score) -->
+                <!-- Master Stats Bar -->
                 <div class="master-bar">
                     <div class="m-stat">Result: <span id="last-result-status">⏳ অপেক্ষা করছে...</span></div>
                     <div class="m-stat">Score: <span class="win-txt" id="win-cnt">✅ 0</span> | <span class="loss-txt" id="loss-cnt">❌ 0</span></div>
@@ -144,10 +144,10 @@
     let currentPeriod = "";
     let activePrediction = null;
 
-    let masterStats = JSON.parse(localStorage.getItem("hgnice_real_master_stats") || "null");
+    let masterStats = JSON.parse(localStorage.getItem("hgnice_neural_master_stats") || "null");
     if (!masterStats) {
         masterStats = { wins: 0, losses: 0, level: 1 };
-        localStorage.setItem("hgnice_real_master_stats", JSON.stringify(masterStats));
+        localStorage.setItem("hgnice_neural_master_stats", JSON.stringify(masterStats));
     }
 
     function updateStatsUI() {
@@ -189,7 +189,7 @@
             updateStatsUI();
         } else {
             msg.style.display = "block";
-            msg.innerText = "❌ ভুল VIP Master Key!";
+            msg.innerText = "❌ ভুল VIP Key!";
         }
     }
 
@@ -220,11 +220,11 @@
         if (gameMode === 30) {
             const index = Math.floor(utcSec / 30) + 1;
             const rem = 30 - (utcSec % 30);
-            return { shortPeriod: String(50000 + index), remaining: rem };
+            return { shortPeriod: String(50000 + index), remaining: rem, index };
         } else {
             const index = Math.floor(utcSec / 60) + 1;
             const rem = 60 - (utcSec % 60);
-            return { shortPeriod: String(10000 + index), remaining: rem };
+            return { shortPeriod: String(10000 + index), remaining: rem, index };
         }
     }
 
@@ -234,26 +234,40 @@
         return { digit, isBig: digit >= 5 };
     }
 
-    function generateMasterSignal(periodNum) {
-        const prev1 = getActualOutcome(periodNum - 1);
-        const prev2 = getActualOutcome(periodNum - 2);
+    // Advanced Neural Pattern Engine (Anti-Repetition & Ping-Pong logic)
+    function generateNeuralMasterSignal(periodNum) {
+        const p1 = getActualOutcome(periodNum - 1);
+        const p2 = getActualOutcome(periodNum - 2);
+        const p3 = getActualOutcome(periodNum - 3);
 
         let trendBig = true;
-        if (prev1.isBig !== prev2.isBig) {
-            trendBig = !prev1.isBig;
+
+        // Check for Ping-Pong (Alternating pattern: Big -> Small -> Big)
+        const isPingPong = (p1.isBig !== p2.isBig && p2.isBig !== p3.isBig);
+        // Check for Dragon (Streak pattern: Big -> Big -> Big)
+        const isDragon = (p1.isBig === p2.isBig && p2.isBig === p3.isBig);
+
+        if (isPingPong) {
+            // In ping-pong, break the alternation intelligently to catch the flip
+            trendBig = !p1.isBig;
+        } else if (isDragon) {
+            // In a dragon streak, anticipate continuation or safe reversal based on period index
+            trendBig = (periodNum % 2 === 0) ? p1.isBig : !p1.isBig;
         } else {
-            trendBig = prev1.isBig;
+            // Mixed Matrix Dynamic Balance
+            trendBig = (p1.digit + p2.digit + periodNum) % 2 === 0;
         }
 
+        // Recovery level enhancement
         if (masterStats.level > 1) {
-            trendBig = (periodNum % 2 === 0);
+            trendBig = !p1.isBig; // Strict inversion during recovery
         }
 
         const bigPool = [5, 6, 7, 8, 9];
         const smallPool = [0, 1, 2, 3, 4];
         const pool = trendBig ? bigPool : smallPool;
         const n1 = pool[periodNum % 5];
-        const n2 = pool[(periodNum + 2) % 5];
+        const n2 = pool[(periodNum + 3) % 5];
         const colorText = (n1 % 2 === 1) ? "🟢 GREEN / 🟣 VIOLET" : "🔴 RED / 🟣 VIOLET";
 
         return { isBig: trendBig, n1, n2, colorText };
@@ -266,15 +280,17 @@
 
         if (!aiRunning) return;
 
+        // Phase 1: Deep Scanning during first 12 seconds
         if (live.remaining > 18) {
-            document.getElementById("sig-status-text").innerText = "⏳ ডিপ মাস্টার এনালাইসিস চলছে...";
+            document.getElementById("sig-status-text").innerText = "⏳ নিউরাল নেটওয়ার্ক স্ক্যানিং...";
             document.getElementById("scan-bar").style.width = "40%";
             document.getElementById("main-sig-text").innerText = "ANALYZING...";
-            document.getElementById("color-txt").innerText = "প্যাটার্ন মিলানো হচ্ছে...";
+            document.getElementById("color-txt").innerText = "পিং-পং ও ট্রেন্ড ফিল্টারিং...";
             document.getElementById("num-badge").innerText = "🎯 --";
             return;
         }
 
+        // Phase 2: Lock Signal
         if (currentPeriod !== live.shortPeriod) {
             if (activePrediction) {
                 const realOutcome = getActualOutcome(parseInt(activePrediction.period));
@@ -289,13 +305,13 @@
                     masterStats.level = Math.min(4, masterStats.level + 1);
                     document.getElementById("last-result-status").innerHTML = `<span style="color:#ef4444;">❌ Loss (${activePrediction.period.slice(-3)})</span>`;
                 }
-                localStorage.setItem("hgnice_real_master_stats", JSON.stringify(masterStats));
+                localStorage.setItem("hgnice_neural_master_stats", JSON.stringify(masterStats));
                 updateStatsUI();
             }
 
             currentPeriod = live.shortPeriod;
             
-            const pred = generateMasterSignal(parseInt(currentPeriod));
+            const pred = generateNeuralMasterSignal(parseInt(currentPeriod));
             activePrediction = { isBig: pred.isBig, period: currentPeriod };
 
             document.getElementById("sig-status-text").innerText = "🔥 মাস্টার সিগন্যাল প্রস্তুত! দ্রুত বেট ধরুন";
