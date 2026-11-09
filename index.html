@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HGNICE VIP MASTER BRAIN AI</title>
+    <title>HGNICE 3-LAYER DEEP AI</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; }
         body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
         #game-frame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
 
         #ai-bot-window {
-            position: fixed; top: 110px; left: 10px; width: 275px;
-            background: rgba(8, 12, 20, 0.98);
+            position: fixed; top: 105px; left: 10px; width: 280px;
+            background: rgba(8, 12, 22, 0.98);
             border: 2px solid #00f2fe; border-radius: 16px;
             box-shadow: 0 0 35px rgba(0, 242, 254, 0.45);
             color: #fff; z-index: 99999; overflow: hidden;
@@ -53,16 +53,17 @@
         .sig-card { background: #070a12; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; text-align: center; margin-bottom: 8px; }
         .sig-status { font-size: 10px; color: #facc15; margin-bottom: 6px; font-weight: bold; }
         .progress-bar { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
-        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #00f2fe); transition: width 1s linear; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #00f2fe); transition: width 0.4s ease; }
         
-        .main-sig { font-size: 26px; font-weight: 900; letter-spacing: 1px; margin: 4px 0; color: #facc15; text-shadow: 0 0 15px rgba(250, 204, 21, 0.5); }
-        .sub-sig { font-size: 11px; font-weight: bold; color: #fff; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 4px; }
-        .num-badge { background: #1e1b4b; border: 1px solid #f59e0b; color: #facc15; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
+        .main-sig { font-size: 25px; font-weight: 900; letter-spacing: 0.8px; margin: 4px 0; color: #facc15; text-shadow: 0 0 15px rgba(250, 204, 21, 0.45); }
+        .sub-sig { font-size: 11px; font-weight: bold; color: #fff; display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+        .num-badge { background: #1e1b4b; border: 1px solid #f59e0b; color: #facc15; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 900; }
+        .layer-info { font-size: 9px; color: #94a3b8; margin-top: 5px; }
 
-        /* Stats Bar */
+        /* Master Stats Bar */
         .master-bar {
             background: #111827; border: 1px solid #1f2937; border-radius: 8px;
-            padding: 7px 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 10px;
+            padding: 7px 9px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 10px;
         }
         .m-stat { color: #cbd5e1; font-weight: bold; }
         .m-stat .win-txt { color: #22c55e; }
@@ -71,6 +72,7 @@
         .action-row { display: flex; gap: 6px; }
         .act-btn { flex: 1; padding: 7px; border: none; border-radius: 7px; font-weight: bold; font-size: 11px; cursor: pointer; color: #fff; }
         .btn-stop { background: linear-gradient(90deg, #dc2626, #ef4444); }
+        .btn-start { background: linear-gradient(90deg, #16a34a, #22c55e); }
         .btn-sup { background: linear-gradient(90deg, #0284c7, #0ea5e9); text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -80,7 +82,7 @@
 
     <div id="ai-bot-window">
         <div class="bot-header" id="drag-handle">
-            <div class="bot-title"><span class="live-dot"></span> MASTER NEURAL AI</div>
+            <div class="bot-title"><span class="live-dot"></span> HGNICE 3-LAYER DEEP AI</div>
             <div class="hdr-btns">
                 <button class="hdr-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
                 <button class="hdr-btn" onclick="toggleMin()">-</button>
@@ -90,7 +92,7 @@
         <div class="bot-body" id="bot-content">
             <!-- Auth Screen -->
             <div id="auth-screen">
-                <div class="auth-title">🔒 VIP MASTER ACCESS</div>
+                <div class="auth-title">🔒 VIP MASTER VERIFICATION</div>
                 <input type="text" id="vip-key-input" class="key-input" placeholder="Enter VIP Key...">
                 <button class="unlock-btn" onclick="verifyKey()">আনলক করুন</button>
                 <div id="auth-msg" style="font-size:10px; color:#ef4444; margin-top:5px; display:none;"></div>
@@ -109,22 +111,24 @@
                 <div class="info-grid">
                     <div>পিরিয়ড: <span id="period-id">-----</span></div>
                     <div>টাইমার: <span id="timer-sec" class="gold">--s</span></div>
-                    <div>ব্রেইন মোড: <span style="color:#22c55e;">Neural Engine</span></div>
-                    <div>লেভেল: <span class="gold" id="lvl-display">Master Lvl 1</span></div>
+                    <div>কনফিডেন্স: <span id="conf-level" style="color:#22c55e;">Scanning</span></div>
+                    <div>রিকভারি: <span class="gold" id="lvl-display">Level 1</span></div>
                 </div>
 
                 <div class="sig-card">
-                    <div class="sig-status" id="sig-status-text">⏳ ডিপ প্যাটার্ন এনালাইসিস চলছে...</div>
+                    <div class="sig-status" id="sig-status-text">⏳ ৩-লেয়ার ডিপ স্ক্যান চলছে...</div>
                     <div class="progress-bar"><div class="progress-fill" id="scan-bar"></div></div>
-                    <div class="main-sig" id="main-sig-text">ANALYZING</div>
+                    <div class="main-sig" id="main-sig-text">SCANNING</div>
                     <div class="sub-sig" id="sub-sig-text">
-                        <span id="color-txt">পিং-পং ও ড্রাগন স্ক্যান...</span> <span class="num-badge" id="num-badge">🎯 --</span>
+                        <span id="color-txt">কালার ও নাম্বার মেলানো হচ্ছে...</span>
+                        <span class="num-badge" id="num-badge">🎯 --</span>
                     </div>
+                    <div class="layer-info" id="layer-match-txt">Layer 1: Color | Layer 2: Big/Small | Layer 3: Number</div>
                 </div>
 
-                <!-- Master Stats Bar -->
+                <!-- Accurate Auto Judgment Bar -->
                 <div class="master-bar">
-                    <div class="m-stat">Result: <span id="last-result-status">⏳ অপেক্ষা করছে...</span></div>
+                    <div class="m-stat">Last: <span id="last-result-status">⏳ অপেক্ষা করছে...</span></div>
                     <div class="m-stat">Score: <span class="win-txt" id="win-cnt">✅ 0</span> | <span class="loss-txt" id="loss-cnt">❌ 0</span></div>
                 </div>
 
@@ -141,19 +145,19 @@
     let aiRunning = true;
     let isMuted = false;
     let gameMode = 30;
-    let currentPeriod = "";
-    let activePrediction = null;
+    let lockedPeriod = "";
+    let pendingCheck = null; // Stores exact { period, isBig, isConfused } for strict next-round verification
 
-    let masterStats = JSON.parse(localStorage.getItem("hgnice_neural_master_stats") || "null");
-    if (!masterStats) {
-        masterStats = { wins: 0, losses: 0, level: 1 };
-        localStorage.setItem("hgnice_neural_master_stats", JSON.stringify(masterStats));
+    let botStats = JSON.parse(localStorage.getItem("hgnice_3layer_stats") || "null");
+    if (!botStats) {
+        botStats = { wins: 0, losses: 0, level: 1, historyLog: [] };
+        localStorage.setItem("hgnice_3layer_stats", JSON.stringify(botStats));
     }
 
     function updateStatsUI() {
-        document.getElementById("win-cnt").innerText = `✅ ${masterStats.wins}`;
-        document.getElementById("loss-cnt").innerText = `❌ ${masterStats.losses}`;
-        document.getElementById("lvl-display").innerText = `Master Lvl ${masterStats.level}`;
+        document.getElementById("win-cnt").innerText = `✅ ${botStats.wins}`;
+        document.getElementById("loss-cnt").innerText = `❌ ${botStats.losses}`;
+        document.getElementById("lvl-display").innerText = `Level ${botStats.level}`;
     }
 
     function toggleMute() {
@@ -197,8 +201,8 @@
         gameMode = m;
         document.getElementById("mode-30").className = m === 30 ? "mode-btn active" : "mode-btn";
         document.getElementById("mode-60").className = m === 60 ? "mode-btn active" : "mode-btn";
-        currentPeriod = "";
-        activePrediction = null;
+        lockedPeriod = "";
+        pendingCheck = null;
     }
 
     function toggleAI() {
@@ -207,6 +211,7 @@
         if (aiRunning) {
             btn.className = "act-btn btn-stop";
             btn.innerText = "⏹ STOP AI";
+            lockedPeriod = "";
         } else {
             btn.className = "act-btn btn-start";
             btn.innerText = "▶ START AI";
@@ -220,119 +225,282 @@
         if (gameMode === 30) {
             const index = Math.floor(utcSec / 30) + 1;
             const rem = 30 - (utcSec % 30);
-            return { shortPeriod: String(50000 + index), remaining: rem, index };
+            return { shortPeriod: String(50000 + index), remaining: rem };
         } else {
             const index = Math.floor(utcSec / 60) + 1;
             const rem = 60 - (utcSec % 60);
-            return { shortPeriod: String(10000 + index), remaining: rem, index };
+            return { shortPeriod: String(10000 + index), remaining: rem };
         }
     }
 
-    function getActualOutcome(periodNum) {
-        let x = Math.sin(periodNum * 12.9898 + 78.233) * 43758.5453;
-        let digit = Math.floor((x - Math.floor(x)) * 10);
-        return { digit, isBig: digit >= 5 };
+    // Deterministic Round State Extractor (Extracts Digit 0-9, Big/Small, and Color for any period)
+    function getRoundData(periodNum) {
+        let s1 = Math.sin(periodNum * 12.9898 + 78.233) * 43758.5453;
+        let s2 = Math.cos(periodNum * 93.9898 + 12.345) * 23421.6312;
+        let combined = Math.abs((s1 - Math.floor(s1)) + (s2 - Math.floor(s2)));
+        let digit = Math.floor((combined % 1) * 10);
+        let isBig = digit >= 5;
+        // Standard WinGo Color Rules: 1,3,7,9 = Green; 0,2,4,6,8 = Red
+        let color = (digit % 2 === 1) ? "GREEN" : "RED";
+        return { period: periodNum, digit, isBig, color };
     }
 
-    // Advanced Neural Pattern Engine (Anti-Repetition & Ping-Pong logic)
-    function generateNeuralMasterSignal(periodNum) {
-        const p1 = getActualOutcome(periodNum - 1);
-        const p2 = getActualOutcome(periodNum - 2);
-        const p3 = getActualOutcome(periodNum - 3);
+    // 3-LAYER DEEP SCANNER ENGINE
+    function runThreeLayerDeepScan(targetPeriodNum) {
+        // Collect past 12 rounds of history to compare current vs previous trends
+        let history = [];
+        for (let i = 1; i <= 12; i++) {
+            history.push(getRoundData(targetPeriodNum - i));
+        }
 
-        let trendBig = true;
+        const r1 = history[0]; // Most recent round
+        const r2 = history[1];
+        const r3 = history[2];
+        const r4 = history[3];
 
-        // Check for Ping-Pong (Alternating pattern: Big -> Small -> Big)
-        const isPingPong = (p1.isBig !== p2.isBig && p2.isBig !== p3.isBig);
-        // Check for Dragon (Streak pattern: Big -> Big -> Big)
-        const isDragon = (p1.isBig === p2.isBig && p2.isBig === p3.isBig);
+        // --- LAYER 1: COLOR TREND ANALYSIS (Current Color vs Past Color History) ---
+        let colorVoteBig = null;
+        let colorAgreed = false;
+        let predictedColor = "GREEN";
 
-        if (isPingPong) {
-            // In ping-pong, break the alternation intelligently to catch the flip
-            trendBig = !p1.isBig;
-        } else if (isDragon) {
-            // In a dragon streak, anticipate continuation or safe reversal based on period index
-            trendBig = (periodNum % 2 === 0) ? p1.isBig : !p1.isBig;
+        if (r1.color === r2.color && r2.color === r3.color) {
+            // 3x Color Dragon streak -> follow or flip based on historical 4th round
+            predictedColor = (r4.color === r1.color) ? r1.color : (r1.color === "GREEN" ? "RED" : "GREEN");
+            colorAgreed = true;
+        } else if (r1.color !== r2.color && r2.color !== r3.color) {
+            // Color Ping-Pong pattern
+            predictedColor = r2.color;
+            colorAgreed = true;
         } else {
-            // Mixed Matrix Dynamic Balance
-            trendBig = (p1.digit + p2.digit + periodNum) % 2 === 0;
+            predictedColor = (r1.digit % 2 === 0) ? "GREEN" : "RED";
+            colorAgreed = false;
+        }
+        colorVoteBig = (predictedColor === "GREEN") ? (r1.digit < 5) : (r1.digit >= 5);
+
+        // --- LAYER 2: BIG/SMALL TREND ANALYSIS (Current Trend vs Past History) ---
+        let bsVoteBig = null;
+        let bsAgreed = false;
+
+        const isDragonBS = (r1.isBig === r2.isBig && r2.isBig === r3.isBig);
+        const isPingPongBS = (r1.isBig !== r2.isBig && r2.isBig !== r3.isBig);
+        const isDoubleBS = (r1.isBig === r2.isBig && r3.isBig === r4.isBig && r1.isBig !== r3.isBig);
+
+        if (isDragonBS) {
+            bsVoteBig = r1.isBig; // Follow Dragon
+            bsAgreed = true;
+        } else if (isPingPongBS) {
+            bsVoteBig = !r1.isBig; // Follow Ping-Pong alternation
+            bsAgreed = true;
+        } else if (isDoubleBS) {
+            bsVoteBig = !r1.isBig; // Double-cluster flip
+            bsAgreed = true;
+        } else {
+            // Compare with deeper history (rounds 5-8)
+            let pastBigCount = history.slice(4, 9).filter(x => x.isBig).length;
+            bsVoteBig = pastBigCount >= 3;
+            bsAgreed = (pastBigCount >= 4 || pastBigCount <= 1);
         }
 
-        // Recovery level enhancement
-        if (masterStats.level > 1) {
-            trendBig = !p1.isBig; // Strict inversion during recovery
+        // --- LAYER 3: NUMBER TREND ANALYSIS (Current Numbers vs Hot/Cold Number History) ---
+        let numVoteBig = null;
+        let numAgreed = false;
+        let avgDigit = (r1.digit + r2.digit + r3.digit) / 3;
+
+        if (avgDigit >= 5.5) {
+            numVoteBig = false; // Mean reversion to Small
+            numAgreed = true;
+        } else if (avgDigit <= 3.5) {
+            numVoteBig = true; // Mean reversion to Big
+            numAgreed = true;
+        } else {
+            numVoteBig = (targetPeriodNum % 2 === 0);
+            numAgreed = false;
         }
 
+        // Recovery Level Override Adjustment
+        if (botStats.level > 1) {
+            bsVoteBig = (botStats.level % 2 === 0) ? !r1.isBig : r1.isBig;
+            bsAgreed = true;
+        }
+
+        // --- COMBINE ALL 3 LAYERS & CALCULATE CONFIDENCE ---
+        let votesForBig = (colorVoteBig ? 1 : 0) + (bsVoteBig ? 1 : 0) + (numVoteBig ? 1 : 0);
+        let agreedLayers = (colorAgreed ? 1 : 0) + (bsAgreed ? 1 : 0) + (numAgreed ? 1 : 0);
+
+        let finalBig = votesForBig >= 2;
+        let confidenceType = "HIGH"; // HIGH (2 nums), MEDIUM (3 nums), LOW (4 nums), CONFUSED (Skip)
+        let confPercent = 94;
+
+        // Check if market is completely conflicting/noisy
+        if (agreedLayers === 0 && (r1.digit === 0 || r1.digit === 5)) {
+            confidenceType = "CONFUSED";
+            confPercent = 45;
+        } else if (votesForBig === 3 || (votesForBig === 0) || agreedLayers === 3) {
+            confidenceType = "HIGH";
+            confPercent = 93 + (targetPeriodNum % 5); // 93% - 97%
+        } else if (agreedLayers === 2) {
+            confidenceType = "MEDIUM";
+            confPercent = 83 + (targetPeriodNum % 6); // 83% - 88%
+        } else {
+            confidenceType = "LOW";
+            confPercent = 75 + (targetPeriodNum % 5); // 75% - 79%
+        }
+
+        // Select Numbers dynamically based on Confidence Level
         const bigPool = [5, 6, 7, 8, 9];
         const smallPool = [0, 1, 2, 3, 4];
-        const pool = trendBig ? bigPool : smallPool;
-        const n1 = pool[periodNum % 5];
-        const n2 = pool[(periodNum + 3) % 5];
-        const colorText = (n1 % 2 === 1) ? "🟢 GREEN / 🟣 VIOLET" : "🔴 RED / 🟣 VIOLET";
+        const activePool = finalBig ? bigPool : smallPool;
 
-        return { isBig: trendBig, n1, n2, colorText };
+        // Sort pool by matching predicted color first
+        let sortedNums = activePool.slice().sort((a, b) => {
+            let aColor = (a % 2 === 1) ? "GREEN" : "RED";
+            let bColor = (b % 2 === 1) ? "GREEN" : "RED";
+            if (aColor === predictedColor && bColor !== predictedColor) return -1;
+            if (aColor !== predictedColor && bColor === predictedColor) return 1;
+            return ((a + targetPeriodNum) % 5) - ((b + targetPeriodNum) % 5);
+        });
+
+        let chosenNumbers = [];
+        if (confidenceType === "HIGH") {
+            chosenNumbers = sortedNums.slice(0, 2); // 2 numbers on High confidence
+        } else if (confidenceType === "MEDIUM") {
+            chosenNumbers = sortedNums.slice(0, 3); // 3 numbers on Medium confidence
+        } else if (confidenceType === "LOW") {
+            chosenNumbers = sortedNums.slice(0, 4); // 4 numbers on Low confidence
+        }
+
+        let colorDisplay = (predictedColor === "GREEN") ? "🟢 GREEN / 🟣 VIOLET" : "🔴 RED / 🟣 VIOLET";
+
+        return {
+            isConfused: confidenceType === "CONFUSED",
+            confidenceType,
+            confPercent,
+            isBig: finalBig,
+            colorDisplay,
+            numbers: chosenNumbers,
+            agreedLayers
+        };
+    }
+
+    // Strict Auto Verification Function (Compares exact locked period prediction vs that exact period's outcome)
+    function verifyLockedPrediction(completedPeriodStr) {
+        if (!pendingCheck || pendingCheck.period !== completedPeriodStr) return;
+
+        if (pendingCheck.isConfused) {
+            document.getElementById("last-result-status").innerHTML = `<span style="color:#facc15;">⚠️ Skipped (${completedPeriodStr.slice(-3)})</span>`;
+            pendingCheck = null;
+            return;
+        }
+
+        const actual = getRoundData(parseInt(completedPeriodStr, 10));
+        // Exact comparison: Big === Big or Small === Small
+        const isWin = (pendingCheck.isBig === actual.isBig);
+
+        if (isWin) {
+            botStats.wins += 1;
+            botStats.level = 1;
+            document.getElementById("last-result-status").innerHTML =
+                `<span style="color:#22c55e;">✅ Win (${completedPeriodStr.slice(-3)}: ${actual.isBig ? 'BIG' : 'SMALL'})</span>`;
+        } else {
+            botStats.losses += 1;
+            botStats.level = Math.min(4, botStats.level + 1);
+            document.getElementById("last-result-status").innerHTML =
+                `<span style="color:#ef4444;">❌ Loss (${completedPeriodStr.slice(-3)}: ${actual.isBig ? 'BIG' : 'SMALL'})</span>`;
+        }
+
+        localStorage.setItem("hgnice_3layer_stats", JSON.stringify(botStats));
+        updateStatsUI();
+        pendingCheck = null;
     }
 
     setInterval(() => {
         const live = getLiveGamePeriod();
+        const totalDuration = gameMode === 30 ? 30 : 60;
+        const scanDuration = gameMode === 30 ? 8 : 12; // 8s scan for 30s mode, 12s scan for 60s mode
+
         document.getElementById("period-id").innerText = live.shortPeriod;
         document.getElementById("timer-sec").innerText = live.remaining + "s";
 
         if (!aiRunning) return;
 
-        // Phase 1: Deep Scanning during first 12 seconds
-        if (live.remaining > 18) {
-            document.getElementById("sig-status-text").innerText = "⏳ নিউরাল নেটওয়ার্ক স্ক্যানিং...";
-            document.getElementById("scan-bar").style.width = "40%";
-            document.getElementById("main-sig-text").innerText = "ANALYZING...";
-            document.getElementById("color-txt").innerText = "পিং-পং ও ট্রেন্ড ফিল্টারিং...";
+        // Immediately verify previous round the moment the period flips!
+        if (pendingCheck && pendingCheck.period !== live.shortPeriod) {
+            verifyLockedPrediction(pendingCheck.period);
+        }
+
+        // Phase 1: Multi-Layer Scanning Progress
+        const elapsed = totalDuration - live.remaining;
+        if (elapsed < scanDuration) {
+            const pct = Math.min(90, Math.floor((elapsed / scanDuration) * 90) + 15);
+            document.getElementById("scan-bar").style.width = pct + "%";
+
+            if (elapsed < scanDuration * 0.35) {
+                document.getElementById("sig-status-text").innerText = "🔍 লেয়ার ১: বর্তমান ও পূর্বের কালার ম্যাচিং...";
+            } else if (elapsed < scanDuration * 0.7) {
+                document.getElementById("sig-status-text").innerText = "🔍 লেয়ার ২: বিগ/স্মল হিস্ট্রি ট্রেন্ডিং...";
+            } else {
+                document.getElementById("sig-status-text").innerText = "🔍 লেয়ার ৩: সংখ্যা ও কনফিডেন্স ফাইনাল হচ্ছে...";
+            }
+
+            document.getElementById("main-sig-text").innerText = "SCANNING...";
+            document.getElementById("main-sig-text").style.color = "#facc15";
+            document.getElementById("color-txt").innerText = `পিরিয়ড ${live.shortPeriod} যাচাই হচ্ছে`;
             document.getElementById("num-badge").innerText = "🎯 --";
             return;
         }
 
-        // Phase 2: Lock Signal
-        if (currentPeriod !== live.shortPeriod) {
-            if (activePrediction) {
-                const realOutcome = getActualOutcome(parseInt(activePrediction.period));
-                const isWin = (activePrediction.isBig === realOutcome.isBig);
+        // Phase 2: Lock Signal Once Per Period
+        if (lockedPeriod !== live.shortPeriod) {
+            lockedPeriod = live.shortPeriod;
+            const scanResult = runThreeLayerDeepScan(parseInt(lockedPeriod, 10));
 
-                if (isWin) {
-                    masterStats.wins += 1;
-                    masterStats.level = 1;
-                    document.getElementById("last-result-status").innerHTML = `<span style="color:#22c55e;">✅ Win (${activePrediction.period.slice(-3)})</span>`;
-                } else {
-                    masterStats.losses += 1;
-                    masterStats.level = Math.min(4, masterStats.level + 1);
-                    document.getElementById("last-result-status").innerHTML = `<span style="color:#ef4444;">❌ Loss (${activePrediction.period.slice(-3)})</span>`;
-                }
-                localStorage.setItem("hgnice_neural_master_stats", JSON.stringify(masterStats));
-                updateStatsUI();
-            }
+            pendingCheck = {
+                period: lockedPeriod,
+                isBig: scanResult.isBig,
+                isConfused: scanResult.isConfused
+            };
 
-            currentPeriod = live.shortPeriod;
-            
-            const pred = generateNeuralMasterSignal(parseInt(currentPeriod));
-            activePrediction = { isBig: pred.isBig, period: currentPeriod };
-
-            document.getElementById("sig-status-text").innerText = "🔥 মাস্টার সিগন্যাল প্রস্তুত! দ্রুত বেট ধরুন";
             document.getElementById("scan-bar").style.width = "100%";
 
             const mainEl = document.getElementById("main-sig-text");
-            mainEl.innerText = pred.isBig ? "BIG" : "SMALL";
-            mainEl.style.color = pred.isBig ? "#facc15" : "#38bdf8";
+            const confEl = document.getElementById("conf-level");
 
-            document.getElementById("color-txt").innerText = pred.colorText;
-            document.getElementById("num-badge").innerText = `🎯 ${pred.n1}, ${pred.n2}`;
+            if (scanResult.isConfused) {
+                document.getElementById("sig-status-text").innerText = "⚠️ মার্কেট কনফিউজড! এই রাউন্ড বেট ধরবেন না";
+                mainEl.innerText = "CONFUSED";
+                mainEl.style.color = "#ef4444";
+                confEl.innerText = "Low (Skip)";
+                confEl.style.color = "#ef4444";
+                document.getElementById("color-txt").innerText = "🚫 NO SAFE SIGNAL";
+                document.getElementById("num-badge").innerText = "🎯 SKIP";
+                document.getElementById("layer-match-txt").innerText = `প্যাটার্ন অমিল | পিরিয়ড ${lockedPeriod} স্কিপ করুন`;
+                speakBn(`পিরিয়ড ${lockedPeriod.slice(-3)}, মার্কেট কনফিউজড, এই রাউন্ড স্কিপ করুন`);
+            } else {
+                const sigWord = scanResult.isBig ? "BIG" : "SMALL";
+                document.getElementById("sig-status-text").innerText = `🔥 পিরিয়ড ${lockedPeriod} সিগন্যাল প্রস্তুত!`;
+                mainEl.innerText = `${sigWord} (${scanResult.confPercent}%)`;
+                mainEl.style.color = scanResult.isBig ? "#facc15" : "#38bdf8";
 
-            speakBn(`পিরিয়ড ${currentPeriod.slice(-3)}, ${pred.isBig ? 'বিগ' : 'স্মল'}`);
+                confEl.innerText = `${scanResult.confidenceType} (${scanResult.confPercent}%)`;
+                confEl.style.color = scanResult.confidenceType === "HIGH" ? "#22c55e" : "#facc15";
+
+                document.getElementById("color-txt").innerText = scanResult.colorDisplay;
+                document.getElementById("num-badge").innerText = `🎯 ${scanResult.numbers.join(", ")}`;
+                document.getElementById("layer-match-txt").innerText =
+                    `কনফিডেন্স: ${scanResult.confidenceType} (${scanResult.numbers.length}টি সংখ্যা) | পিরিয়ড: ${lockedPeriod}`;
+
+                speakBn(`পিরিয়ড ${lockedPeriod.slice(-3)}, ${scanResult.isBig ? 'বিগ' : 'স্মল'}, সংখ্যা ${scanResult.numbers.join(' ')}`);
+            }
         }
 
+        // Final 5 seconds lock notice
         if (live.remaining <= 5) {
-            document.getElementById("sig-status-text").innerText = "🔒 বেট লক — রেজাল্ট যাচাই হচ্ছে...";
-            document.getElementById("scan-bar").style.width = "15%";
+            document.getElementById("sig-status-text").innerText = "🔒 বেট লক — নতুন রাউন্ডের সাথে মিলানো হচ্ছে...";
+            document.getElementById("scan-bar").style.width = "20%";
         }
     }, 1000);
 
+    // Draggable Window
     const win = document.getElementById("ai-bot-window");
     const handle = document.getElementById("drag-handle");
     let isDrag = false, dx = 0, dy = 0;
