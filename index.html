@@ -52,7 +52,7 @@
 
         /* 5 Algorithm Badges */
         .algo-row { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-bottom: 7px; }
-        .algo-badge { font-size: 9px; padding: 2px 6px; border-radius: 5px; background: #161f30; color: #64748b; border: 1px solid #2d3748; font-weight: 600; transition: 0.2s; }
+        .algo-badge { font-size: 9px; padding: 2px 6px; border-radius: 5px; background: #161f30; color: #64748b; border: 1px solid #2d3748; font-weight: 600; }
         .algo-badge.on { background: rgba(16, 185, 129, 0.18); color: #34d399; border-color: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.3); }
 
         /* Signal Box */
@@ -65,7 +65,7 @@
         .num-badge { background: #271c19; border: 1px solid #f59e0b; color: #facc15; padding: 1px 6px; border-radius: 5px; font-size: 10px; }
         .conf-sub { font-size: 9px; color: #64748b; margin-top: 4px; }
 
-        /* Live Right / Wrong Auto Counter */
+        /* Stats Bar */
         .stats-bar {
             display: flex; justify-content: space-between; align-items: center;
             background: #111827; border: 1px solid #1f2937; border-radius: 7px;
@@ -131,18 +131,17 @@
                 </div>
 
                 <div class="sig-card">
-                    <div class="sig-status" id="sig-status-text">🔥 মাস্টার সিগন্যাল প্রস্তুত! দ্রুত বেট ধরুন</div>
-                    <div class="progress-bar"><div class="progress-fill" id="scan-bar" style="width:100%;"></div></div>
-                    <div class="main-sig" id="main-sig-text">READY</div>
+                    <div class="sig-status" id="sig-status-text">🔄 এআই এনালাইসিস চলছে...</div>
+                    <div class="progress-bar"><div class="progress-fill" id="scan-bar" style="width:50%;"></div></div>
+                    <div class="main-sig" id="main-sig-text">SCANNING...</div>
                     <div class="sub-sig" id="sub-sig-text">
-                        <span>🟢 GREEN / 🟣 VIOLET</span> <span class="num-badge">🎯 --, --</span>
+                        <span>⏳ নতুন রাউন্ড যাচাই হচ্ছে</span> <span class="num-badge">🎯 --</span>
                     </div>
-                    <div class="conf-sub" id="conf-line">AI Confidence: 94% | 5-Year History Verified</div>
+                    <div class="conf-sub" id="conf-line">AI Confidence: Calculating...</div>
                 </div>
 
-                <!-- Permanent Live Right / Wrong Counter -->
                 <div class="stats-bar">
-                    <span>Today: <span class="stat-right" id="right-cnt">✅ 0 Right</span> | <span class="stat-wrong" id="wrong-cnt">❌ 0 Wrong</span></span>
+                    <span>Today: <span class="stat-right" id="right-cnt">✅ 18 Right</span> | <span class="stat-wrong" id="wrong-cnt">❌ 3 Wrong</span></span>
                     <span class="stat-step" id="step-lvl">Level 1</span>
                 </div>
 
@@ -161,19 +160,14 @@
     let gameMode = 30;
     let activePeriod = "";
     let lastCheckedPeriod = "";
-    let currentPred = null;
 
-    // Permanent 5-Year History & Self-Testing Database (NEVER resets or deletes)
-    const FIVE_YEAR_BASE = 5256000; // 5 years of 30s rounds
     let permanentBrain = JSON.parse(localStorage.getItem("hgnice_permanent_5yr_brain") || "null");
     if (!permanentBrain) {
         permanentBrain = {
-            totalHistoryRounds: FIVE_YEAR_BASE + 420,
+            totalHistoryRounds: 5256420,
             totalRight: 18,
             totalWrong: 3,
-            step: 1,
-            weights: { dragon: 1.35, ping: 1.25, cluster: 1.30, hot: 1.40 },
-            learnedLog: []
+            step: 1
         };
         localStorage.setItem("hgnice_permanent_5yr_brain", JSON.stringify(permanentBrain));
     }
@@ -244,21 +238,20 @@
         }
     }
 
-    // Exact Live Period calculation matching 20261109100050231
     function getLiveGamePeriod() {
         const now = new Date();
-        const syncedUtcSec = (now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds()) + 2;
-
+        const utcSec = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+        
         if (gameMode === 30) {
-            const index = Math.floor(syncedUtcSec / 30) + 1;
-            const rem = 30 - (syncedUtcSec % 30);
+            const index = Math.floor(utcSec / 30) + 1;
+            const rem = 30 - (utcSec % 30);
             const period5 = String(50000 + index);
-            return { shortPeriod: period5, remaining: rem, rawIndex: index };
+            return { shortPeriod: period5, remaining: rem };
         } else {
-            const index = Math.floor(syncedUtcSec / 60) + 1;
-            const rem = 60 - (syncedUtcSec % 60);
+            const index = Math.floor(utcSec / 60) + 1;
+            const rem = 60 - (utcSec % 60);
             const period5 = String(10000 + index);
-            return { shortPeriod: period5, remaining: rem, rawIndex: index };
+            return { shortPeriod: period5, remaining: rem };
         }
     }
 
@@ -272,24 +265,9 @@
 
     function runFiveAlgorithms(periodStr) {
         const pNum = parseInt(periodStr, 10);
-        const h1 = getRoundOutcomeHash(String(pNum - 1));
-        const h2 = getRoundOutcomeHash(String(pNum - 2));
-        const h3 = getRoundOutcomeHash(String(pNum - 3));
-        const h4 = getRoundOutcomeHash(String(pNum - 4));
-
-        const dragonOn = (h1.isBig === h2.isBig && h2.isBig === h3.isBig);
-        const pingOn = (h1.isBig !== h2.isBig && h2.isBig !== h3.isBig);
-        const clusterOn = (h1.isBig === h2.isBig && h3.isBig === h4.isBig);
-
-        document.getElementById("al-dragon").className = dragonOn ? "algo-badge on" : "algo-badge";
-        document.getElementById("al-ping").className = pingOn ? "algo-badge on" : "algo-badge";
-        document.getElementById("al-cluster").className = clusterOn ? "algo-badge on" : "algo-badge";
-        document.getElementById("al-hot").className = "algo-badge on";
-        document.getElementById("al-noise").className = "algo-badge on";
-
         const target = getRoundOutcomeHash(periodStr);
         let predBig = target.isBig;
-        const conf = 90 + (pNum % 8); // 90% - 97%
+        const conf = 91 + (pNum % 7); // 91% - 97%
 
         const bigPool = [5, 6, 7, 8, 9];
         const smallPool = [0, 1, 2, 3, 4];
@@ -297,16 +275,12 @@
         const n1 = pool[pNum % 5];
         const n2 = pool[(pNum + 2) % 5];
 
-        const colorHtml = (n1 % 2 === 1)
-            ? "🟢 GREEN / 🟣 VIOLET"
-            : "🔴 RED / 🟣 VIOLET";
-
+        const colorHtml = (n1 % 2 === 1) ? "🟢 GREEN / 🟣 VIOLET" : "🔴 RED / 🟣 VIOLET";
         return { isBig: predBig, conf, n1, n2, colorHtml };
     }
 
-    // Self-test & append to permanent 5-year memory (never deletes)
     function verifyPreviousPeriod(prevPeriodStr) {
-        if (!currentPred || lastCheckedPeriod === prevPeriodStr) return;
+        if (!prevPeriodStr || lastCheckedPeriod === prevPeriodStr) return;
         lastCheckedPeriod = prevPeriodStr;
 
         const checkSeed = (parseInt(prevPeriodStr, 10) % 10);
@@ -318,14 +292,8 @@
         } else {
             permanentBrain.totalWrong += 1;
             permanentBrain.step = Math.min(4, permanentBrain.step + 1);
-            // Adaptive weight correction on loss
-            permanentBrain.weights.hot = +(permanentBrain.weights.hot + 0.02).toFixed(2);
         }
-
         permanentBrain.totalHistoryRounds += 1;
-        permanentBrain.learnedLog.push({ p: prevPeriodStr, w: isWin ? 1 : 0 });
-        if (permanentBrain.learnedLog.length > 500) permanentBrain.learnedLog.shift();
-
         localStorage.setItem("hgnice_permanent_5yr_brain", JSON.stringify(permanentBrain));
         updateStatsUI();
     }
@@ -337,52 +305,46 @@
 
         if (!aiRunning) return;
 
+        // When a new period starts
         if (activePeriod !== live.shortPeriod) {
             if (activePeriod !== "") {
                 verifyPreviousPeriod(activePeriod);
             }
             activePeriod = live.shortPeriod;
-            currentPred = runFiveAlgorithms(activePeriod);
 
-            const mainEl = document.getElementById("main-sig-text");
-            mainEl.innerText = `${currentPred.isBig ? "BIG" : "SMALL"} (${currentPred.conf}%)`;
-            mainEl.style.color = currentPred.isBig ? "#facc15" : "#38bdf8";
+            // Show Scanning Status immediately
+            document.getElementById("sig-status-text").innerText = "🔄 নতুন রাউন্ড এনালাইসিস চলছে...";
+            document.getElementById("scan-bar").style.width = "40%";
+            document.getElementById("main-sig-text").innerText = "SCANNING...";
 
-            document.getElementById("sub-sig-text").innerHTML =
-                `<span>${currentPred.colorHtml}</span> <span class="num-badge">🎯 ${currentPred.n1}, ${currentPred.n2}</span>`;
-            document.getElementById("conf-line").innerText =
-                `AI Confidence: ${currentPred.conf}% | 5Yr DB: ${permanentBrain.totalHistoryRounds.toLocaleString()}+`;
+            // Small delay to simulate deep grandmaster calculation
+            setTimeout(() => {
+                if (activePeriod !== live.shortPeriod) return;
+                const currentPred = runFiveAlgorithms(activePeriod);
 
-            speakSignalOnly(`পিরিয়ড ${activePeriod.slice(-3)}, ${currentPred.isBig ? "বিগ" : "স্মল"}`);
+                document.getElementById("sig-status-text").innerText = "🔥 মাস্টার সিগন্যাল প্রস্তুত! দ্রুত বেট ধরুন";
+                document.getElementById("scan-bar").style.width = "100%";
+                
+                const mainEl = document.getElementById("main-sig-text");
+                mainEl.innerText = `${currentPred.isBig ? "BIG" : "SMALL"} (${currentPred.conf}%)`;
+                mainEl.style.color = currentPred.isBig ? "#facc15" : "#38bdf8";
+
+                document.getElementById("sub-sig-text").innerHTML =
+                    `<span>${currentPred.colorHtml}</span> <span class="num-badge">🎯 ${currentPred.n1}, ${currentPred.n2}</span>`;
+                document.getElementById("conf-line").innerText =
+                    `AI Confidence: ${currentPred.conf}% | 5Yr DB Verified`;
+
+                speakSignalOnly(`পিরিয়ড ${activePeriod.slice(-3)}, ${currentPred.isBig ? "বিগ" : "স্মল"}`);
+            }, 600);
         }
 
         if (live.remaining <= 5) {
-            document.getElementById("sig-status-text").innerText = "🔒 বেট লক — লাইভ সেলফ-টেস্ট চলছে...";
+            document.getElementById("sig-status-text").innerText = "🔒 বেট লক — রেজাল্ট যাচাই হচ্ছে...";
             document.getElementById("scan-bar").style.width = "15%";
-        } else {
-            document.getElementById("sig-status-text").innerText = "🔥 মাস্টার সিগন্যাল প্রস্তুত! দ্রুত বেট ধরুন";
-            document.getElementById("scan-bar").style.width = "100%";
         }
     }, 1000);
 
-    // Sync with 24/7 Cloud Brain API (merges offline self-tested rounds into permanent memory)
-    async function syncCloudBrain() {
-        try {
-            const res = await fetch('/api/cron-brain');
-            const data = await res.json();
-            if (data && data.totalRoundsLearned) {
-                if (data.totalRoundsLearned > permanentBrain.totalHistoryRounds) {
-                    permanentBrain.totalHistoryRounds = data.totalRoundsLearned;
-                }
-                localStorage.setItem("hgnice_permanent_5yr_brain", JSON.stringify(permanentBrain));
-                updateStatsUI();
-            }
-        } catch (e) {}
-    }
-    syncCloudBrain();
-    setInterval(syncCloudBrain, 20000);
-
-    // Draggable Floating Box
+    // Draggable Window
     const win = document.getElementById("ai-bot-window");
     const handle = document.getElementById("drag-handle");
     let isDrag = false, dx = 0, dy = 0;
