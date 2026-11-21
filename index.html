@@ -1,369 +1,338 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HGNICE VIP MASTER PRO AI</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
-        #game-frame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
-
-        #ai-bot-window {
-            position: fixed; top: 95px; left: 8px; width: 286px;
-            background: rgba(8, 12, 22, 0.98);
-            border: 2px solid #00f2fe; border-radius: 16px;
-            box-shadow: 0 0 35px rgba(0, 242, 254, 0.45);
-            color: #fff; z-index: 99999; overflow: hidden;
-            backdrop-filter: blur(12px);
-        }
-
-        .bot-header {
-            background: linear-gradient(90deg, #090d16, #1e293b);
-            padding: 7px 11px; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(0, 242, 254, 0.3); cursor: move;
-        }
-        .bot-title { font-size: 11px; font-weight: 900; color: #facc15; display: flex; align-items: center; gap: 6px; }
-        .live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 8px #22c55e; animation: pulse 1s infinite; }
-        @keyframes pulse { 50% { opacity: 0.3; } }
-        .hdr-btns { display: flex; gap: 5px; }
-        .hdr-btn { background: #334155; color: #fff; border: none; border-radius: 5px; width: 22px; height: 22px; font-size: 11px; font-weight: bold; cursor: pointer; }
-
-        .bot-body { padding: 9px; }
-
-        /* Auth Screen */
-        #auth-screen { text-align: center; padding: 10px 5px; }
-        .auth-title { font-size: 12px; color: #facc15; font-weight: bold; margin-bottom: 6px; }
-        .key-input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #334155; background: #090d16; color: #00f2fe; text-align: center; font-weight: bold; font-size: 12px; margin-bottom: 8px; outline: none; }
-        .unlock-btn { width: 100%; padding: 8px; border-radius: 8px; border: none; background: linear-gradient(90deg, #00f2fe, #38bdf8); color: #000; font-weight: 800; font-size: 12px; cursor: pointer; }
-        .auth-links { margin-top: 8px; font-size: 10px; }
-        .auth-links a { color: #38bdf8; text-decoration: none; font-weight: bold; }
-
-        /* Mode Switch */
-        .mode-row { display: flex; gap: 6px; margin-bottom: 7px; }
-        .mode-btn { flex: 1; padding: 5px; font-size: 10px; font-weight: bold; background: #111827; color: #94a3b8; border: 1px solid #374151; border-radius: 8px; cursor: pointer; text-align: center; }
-        .mode-btn.active { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border-color: #38bdf8; }
-
-        /* Info Grid */
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: #070a12; padding: 6px 8px; border-radius: 8px; border: 1px solid #1e293b; font-size: 9.5px; margin-bottom: 7px; color: #cbd5e1; }
-        .info-grid span { color: #38bdf8; font-weight: bold; }
-        .gold { color: #facc15; }
-
-        /* Signal Box */
-        .sig-card { background: #070a12; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; text-align: center; margin-bottom: 7px; }
-        .sig-status { font-size: 10px; color: #facc15; margin-bottom: 5px; font-weight: bold; }
-        .progress-bar { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 7px; }
-        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #00f2fe); transition: width 0.4s ease; }
-        
-        .main-sig { font-size: 24px; font-weight: 900; letter-spacing: 0.8px; margin: 3px 0; color: #facc15; text-shadow: 0 0 15px rgba(250, 204, 21, 0.45); }
-        .sub-sig { font-size: 11.5px; font-weight: bold; color: #fff; display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 5px; }
-        .num-badge { background: #1e1b4b; border: 1px solid #f59e0b; color: #facc15; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 900; letter-spacing: 0.5px; }
-        .layer-info { font-size: 8.5px; color: #94a3b8; margin-top: 4px; }
-
-        /* Live Neural Memory Counter Bar (No Win/Loss scores, only Pro Neural Data Growth) */
-        .neural-bar {
-            background: #111827; border: 1px solid #1f2937; border-radius: 8px;
-            padding: 7px 10px; margin-bottom: 7px; text-align: center; font-size: 10px; color: #cbd5e1;
-        }
-        .neural-bar span { color: #22c55e; font-weight: bold; }
-
-        .action-row { display: flex; gap: 6px; }
-        .act-btn { flex: 1; padding: 6px; border: none; border-radius: 7px; font-weight: bold; font-size: 10.5px; cursor: pointer; color: #fff; }
-        .btn-stop { background: linear-gradient(90deg, #dc2626, #ef4444); }
-        .btn-start { background: linear-gradient(90deg, #16a34a, #22c55e); }
-        .btn-sup { background: linear-gradient(90deg, #0284c7, #0ea5e9); text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👑 EXPENSIVE VIP AI BOT</title>
+<style>
+:root{--bg:#08090e;--panel:#11131d;--panel2:#171a26;--gold:#e7bd68;--gold2:#9e7737;--muted:#9298aa;--line:#2a2d3b;--green:#35d69a;--red:#ff647b;--blue:#8e9cff} 
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% -20%,#282039 0,#0b0c14 38%,var(--bg) 72%);color:#f3f3f7;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;padding:18px 12px 40px} 
+.wrap{max-width:900px;margin:auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:5px 0 18px}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:43px;height:43px;border-radius:14px;background:linear-gradient(145deg,#f4d58f,#8d6427);display:grid;place-items:center;color:#17110a;font-weight:1000;font-size:20px;box-shadow:0 0 24px #d9aa4b35}
+.brand h1{font-size:16px;letter-spacing:1.8px;margin:0;color:#f4d89d}
+.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;margin-top:3px}
+.status{font-size:10px;border:1px solid #3b765f;color:#75e3b4;padding:7px 10px;border-radius:20px;background:#12322670;white-space:nowrap} 
+.card{background:linear-gradient(145deg,#151824ed,#0f1119f2);border:1px solid var(--line);border-radius:19px;padding:16px;margin:12px 0;box-shadow:0 12px 32px #0004}
+.hero{border-color:#69532e;background:linear-gradient(135deg,#211b15,#151722 58%,#171324);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-70px;top:-90px;background:#d5a64b12;filter:blur(5px);pointer-events:none} 
+.kicker{font-size:10px;color:var(--gold);letter-spacing:2px;font-weight:800}
+.countrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.timer{font-size:42px;font-weight:900;letter-spacing:2px;color:#f5d38e;font-variant-numeric:tabular-nums}
+.sub{font-size:11px;color:var(--muted)}
+.period{font-size:15px;font-weight:800;word-break:break-all;color:#fff;margin-top:5px} 
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.metric{background:#0c0e16;border:1px solid #292d3b;border-radius:14px;padding:13px}
+.metric label{font-size:10px;color:var(--muted);letter-spacing:1px}
+.metric strong{display:block;font-size:25px;margin-top:6px;font-variant-numeric:tabular-nums}
+.gold{color:var(--gold)}.green{color:var(--green)}.red{color:var(--red)} 
+.signal{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.signalword{font-size:34px;font-weight:1000;letter-spacing:1px}
+.tag{display:inline-block;padding:5px 9px;border-radius:20px;font-size:10px;font-weight:800;background:#292536;color:#c9b7f2}
+.bar{height:8px;border-radius:20px;background:#292c39;overflow:hidden;margin-top:8px}
+.bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,#a77b32,#f3d48f);border-radius:20px;transition:width .3s} 
+h2{font-size:13px;letter-spacing:1px;color:#f0d49b;margin:0 0 12px}
+.muted{color:var(--muted);font-size:11px;line-height:1.6}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field{flex:1;min-width:120px}
+.field label{display:block;font-size:10px;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;border:1px solid #343849;background:#0b0d15;color:#fff;padding:11px;border-radius:10px;font-size:14px;outline:none}
+.btn{border:1px solid #8c6a36;background:linear-gradient(135deg,#e5bf76,#a77a35);color:#1b1409;font-weight:900;padding:11px 14px;border-radius:11px;cursor:pointer}
+.btn.secondary{background:#1a1e2a;color:#e8d5ad;border-color:#41475a}
+.btn.danger{background:#2b1720;color:#ff9aaa;border-color:#63303c}
+.btn:active{transform:scale(.98)} 
+.resultbuttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.resultbuttons button{padding:13px 6px;border-radius:11px;border:1px solid #41475a;background:#191d29;color:#fff;font-weight:900;cursor:pointer}
+.resultbuttons .b{border-color:#287b5d;color:#65e6b1}
+.resultbuttons .s{border-color:#8c3448;color:#ff8295} 
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:10px;padding:6px 8px;border:1px solid #373b4b;border-radius:8px;color:#c9ccda;background:#151824}
+.history{width:100%;border-collapse:collapse;font-size:11px}
+.history th,.history td{text-align:left;padding:9px 6px;border-bottom:1px solid #292d3a}
+.history th{color:var(--muted);font-weight:600}
+.pill{padding:4px 7px;border-radius:7px;font-weight:800}
+.pill.big{color:#70e8b7;background:#123a2d}
+.pill.small{color:#ff91a1;background:#421c27}
+.pill.win{color:#70e8b7;background:#123a2d;border:1px solid #287b5d}
+.pill.loss{color:#ff91a1;background:#421c27;border:1px solid #8c3448}
+.note{border-left:3px solid var(--gold2);padding:10px 12px;background:#201b14;border-radius:0 10px 10px 0;color:#d9c8a8;font-size:11px;line-height:1.6}
+.footer{text-align:center;color:#73798b;font-size:10px;margin:20px 0}
+@media(min-width:650px){.twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px}.timer{font-size:48px}} 
+</style>
 </head>
 <body>
 
-    <iframe id="game-frame" src="https://hgnice.bet/#/register?invitationCode=732171626890"></iframe>
-
-    <div id="ai-bot-window">
-        <div class="bot-header" id="drag-handle">
-            <div class="bot-title"><span class="live-dot"></span> HGNICE MASTER PRO AI</div>
-            <div class="hdr-btns">
-                <button class="hdr-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
-                <button class="hdr-btn" onclick="toggleMin()">-</button>
+<div class="wrap">
+    <div class="top">
+        <div class="brand">
+            <div class="logo">V</div>
+            <div>
+                <h1>EXPENSIVE VIP AI BOT</h1>
+                <small>ACCURACY TRACKING ENGINE</small>
             </div>
         </div>
+        <div class="status">● ACTIVE</div>
+    </div>
 
-        <div class="bot-body" id="bot-content">
-            <!-- Auth Screen -->
-            <div id="auth-screen">
-                <div class="auth-title">🔒 VIP PRO VERIFICATION</div>
-                <input type="text" id="vip-key-input" class="key-input" placeholder="Enter VIP Key...">
-                <button class="unlock-btn" onclick="verifyKey()">আনলক করুন</button>
-                <div id="auth-msg" style="font-size:10px; color:#ef4444; margin-top:5px; display:none;"></div>
-                <div class="auth-links">
-                    <a href="https://t.me/Afif_abdullah_xo" target="_blank">📩 Key নিতে টেলিগ্রাম করুন</a>
+    <div class="card hero">
+        <div class="kicker">NEXT ROUND TIMER (30s Timing Rule)</div>
+        <div class="countrow">
+            <div class="timer" id="timer">00:30</div>
+            <div class="sub" style="text-align:right;">ট্রেডিং টিপস:<br>৩০ সে. আগে হিসাব করুন</div>
+        </div>
+        <div class="period" id="periodView">CURRENT PREDICTION ACCURACY TRACKER</div>
+    </div>
+
+    <div class="twocol">
+        <div class="card" style="text-align:center;">
+            <div class="kicker">VIP PREDICTION SIGNAL</div>
+            <div class="signalword gold" id="signal" style="margin:15px 0;">WAIT</div>
+            <div class="tag" id="confidenceTag">ADD RESULTS TO START</div>
+            <div class="sub" id="reason" style="margin-top:10px;">পর্যাপ্ত ফলাফল যোগ করুন</div>
+        </div>
+
+        <div class="card">
+            <div class="kicker" style="margin-bottom:10px;">MEASURED ACCURACY STATS</div>
+            <div class="grid">
+                <div class="metric">
+                    <label>TOTAL TESTED</label>
+                    <strong class="gold" id="totalTested">0</strong>
+                </div>
+                <div class="metric">
+                    <label>WIN ACCURACY</label>
+                    <strong class="green" id="winAccuracy">0%</strong>
                 </div>
             </div>
-
-            <!-- Main Dashboard -->
-            <div id="ai-dashboard" style="display:none;">
-                <div class="mode-row">
-                    <div id="mode-30" class="mode-btn active" onclick="switchMode(30)">⚡ WinGo 30s</div>
-                    <div id="mode-60" class="mode-btn" onclick="switchMode(60)">⏱️ WinGo 1Min</div>
-                </div>
-
-                <div class="info-grid">
-                    <div>পিরিয়ড: <span id="period-id">-----</span></div>
-                    <div>টাইমার: <span id="timer-sec" class="gold">--s</span></div>
-                    <div>বট মোড: <span style="color:#22c55e;">PRO Neural</span></div>
-                    <div>লেভেল: <span class="gold" id="lvl-display">Level 1</span></div>
-                </div>
-
-                <div class="sig-card">
-                    <div class="sig-status" id="sig-status-text">⏳ ৩-লেয়ার ডিপ স্ক্যান চলছে...</div>
-                    <div class="progress-bar"><div class="progress-fill" id="scan-bar"></div></div>
-                    <div class="main-sig" id="main-sig-text">SCANNING</div>
-                    <div class="sub-sig" id="sub-sig-text">
-                        <span id="color-txt">কালার ও ট্রেন্ড মেলানো হচ্ছে...</span>
-                    </div>
-                    <div style="margin-top: 6px;">
-                        <span class="num-badge" id="num-badge">🎯 সংখ্যা: --</span>
-                    </div>
-                    <div class="layer-info" id="layer-match-txt">Layer 1: Color | Layer 2: Trend | Layer 3: Number</div>
-                </div>
-
-                <!-- Live Neural Memory Signal Counter (Shows how many rounds/signals stored and learning) -->
-                <div class="neural-bar">
-                    🧠 ব্রেইন মেমোরি সিগন্যাল জমা হয়েছে: <span id="total-signals-cnt">0</span> রাউন্ড
-                </div>
-
-                <div class="action-row">
-                    <button id="toggle-ai-btn" class="act-btn btn-stop" onclick="toggleAI()">⏹ STOP AI</button>
-                    <a href="https://t.me/Afif_abdullah_xo" target="_blank" class="act-btn btn-sup">✈️ সাপোর্ট</a>
-                </div>
-            </div>
+            <div class="bar" style="margin-top:12px;"><span id="accBar" style="background:var(--green); width:0%;"></span></div>
+            <div class="muted" style="margin-top:8px; font-size:10px;">আগের সিগন্যালের সাথে পরের ফলাফল মিলিয়ে রিয়েল একুরেসি হিসাব করা হয়।</div>
         </div>
     </div>
 
+    <div class="card">
+        <h2>01 / ADD RESULT (নতুন রেজাল্ট দিন)</h2>
+        <div class="row">
+            <div class="field">
+                <label>Period Number</label>
+                <input type="text" id="periodInput" placeholder="যেমন: 20261116...">
+            </div>
+            <div class="field">
+                <label>Result Number (০-৯)</label>
+                <input type="number" id="resultInput" placeholder="0-9" min="0" max="9">
+            </div>
+        </div>
+        <div class="resultbuttons">
+            <button class="b" onclick="quick('BIG')">BIG</button>
+            <button class="s" onclick="quick('SMALL')">SMALL</button>
+            <button class="btn secondary" onclick="addResult()">ADD</button>
+        </div>
+        <div class="row" style="margin-top:10px;">
+            <button class="btn danger" onclick="undo()">UNDO</button>
+            <button class="btn danger" onclick="clearAll()">CLEAR</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>02 / FIRST PAGE MATH & ADVANCED LOGIC</h2>
+        <div class="row">
+            <div class="field">
+                <label>প্রথম পাতার নম্বরগুলো লিখুন (যেমন: ৫টি সংখ্যা)</label>
+                <input type="text" id="firstPage" placeholder="যেমন: 6 8 4 0 9">
+            </div>
+        </div>
+        <div class="muted" style="margin-top:8px; font-size:10px;">
+            ✦ লজিক ১-৩: যোগ/বিয়োগ ও মিডল হিসাব<br>
+            ✦ লজিক ৪: শেষ ৩টি সংখ্যা যোগ<br>
+            ✦ লজিক ৫: ২য় ও ৩য় সংখ্যার যোগফল
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>03 / RESULT HISTORY & ACCURACY STATUS</h2>
+        <table class="history">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Result</th>
+                    <th>Signal Was</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody">
+                <tr><td colspan="4" style="text-align:center; padding:20px;" class="muted">এখনো কোনো ফলাফল যোগ করা হয়নি।</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card note">
+        <strong>⚠️ প্রিমিয়াম ট্রেডিং টিপস ও সতর্কতা:</strong> 
+        ১. পরবর্তী ট্রেড বা বেট ধরার ক্ষেত্রে ৩০ সেকেন্ড আগে হিসাব করে কনফার্ম করুন।<br>
+        ২. মার্কেট একটানা ৭ থেকে ১০টি পর্যন্ত একই ট্রেন্ড (Big/Small) দিতে পারে—ট্রেন্ডের বিপরীতে না গিয়ে সাথে চলুন।<br>
+        ৩. গেমের ফলাফল র‍্যান্ডম, তাই নিজের দায়িত্বে ও বুঝে ট্রেড করুন।
+    </div>
+
+    <div class="footer">EXPENSIVE VIP AI BOT · ACCURACY TRACKING EDITION</div>
+</div>
+
 <script>
-    const DEFAULT_KEYS = ["VIP-AFIF-999", "VIP-2026-PRO", "AFIF-MASTER-99"];
-    let aiRunning = true;
-    let isMuted = false;
-    let gameMode = 30;
-    let currentLockedPeriod = "";
+const KEY='expensiveVipResultsV7'; 
+let results=[]; 
+try{results=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){results=[]} 
+let tick=30;
+const $=id=>document.getElementById(id); 
+const big=n=>n>=5; 
 
-    // Neural Pro Memory Storage & Signal Counter
-    let neuralMemory = JSON.parse(localStorage.getItem("hgnice_pro_neural_memory") || "null");
-    if (!neuralMemory) {
-        neuralMemory = { totalSignalsGenerated: 1420, log: {} };
-        localStorage.setItem("hgnice_pro_neural_memory", JSON.stringify(neuralMemory));
+function save(){localStorage.setItem(KEY,JSON.stringify(results))} 
+function quick(side){$('resultInput').value='';$('resultInput').dataset.side=side;addResult()} 
+
+function addResult(){ 
+    const raw=$('resultInput').value.trim(), sideOnly=$('resultInput').dataset.side; 
+    let n=raw===''?null:Number(raw); 
+    if(n!==null&&(!Number.isInteger(n)||n<0||n>9)){alert('০ থেকে ৯-এর মধ্যে নম্বর দিন।');return} 
+    if(n===null&&!sideOnly){alert('Result number দিন অথবা BIG/SMALL বাটন চাপুন।');return} 
+    const side=n===null?sideOnly:(big(n)?'BIG':'SMALL'); 
+    const p=$('periodInput').value.trim()||'—'; 
+
+    // বর্তমান সিগন্যাল হিসাব করা (নতুন রেজাল্ট যুক্ত করার আগে)
+    const currentSignal = analyze().side;
+
+    results.unshift({
+        period: p,
+        n: n,
+        side: side,
+        predicted: currentSignal,
+        status: null, // পরে চেক করা হবে WIN নাকি LOSS
+        time: new Date().toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+    }); 
+
+    // আগের এন্ট্রিগুলোর স্ট্যাটাস আপডেট করা
+    if(results.length > 1 && results[1].predicted && results[1].predicted !== 'WAIT') {
+        results[1].status = (results[1].predicted === side) ? 'WIN' : 'LOSS';
     }
 
-    function updateNeuralUI() {
-        document.getElementById("total-signals-cnt").innerText = neuralMemory.totalSignalsGenerated.toLocaleString() + "+";
-    }
+    results=results.slice(0,250);
+    $('resultInput').value=''; $('resultInput').dataset.side=''; $('periodInput').value='';
+    save(); render(); 
+} 
 
-    function toggleMute() {
-        isMuted = !isMuted;
-        document.getElementById("mute-btn").innerText = isMuted ? "🔇" : "🔊";
-        if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-    }
+function undo(){results.shift();save();render()} 
+function clearAll(){if(confirm('সব history মুছে ফেলবেন?')){results=[];save();render()}} 
 
-    function speakBn(text) {
-        if (isMuted || !('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'bn-BD';
-        u.rate = 1.0;
-        window.speechSynthesis.speak(u);
-    }
+function streakInfo(){ 
+    if(!results.length)return null;
+    let side=results[0].side,count=0; 
+    for(const r of results){if(r.side!==side)break;count++}
+    return {side,count}; 
+} 
 
-    function verifyKey() {
-        const val = document.getElementById("vip-key-input").value.trim();
-        const savedKeys = JSON.parse(localStorage.getItem("hgnice_vip_keys") || "[]");
-        const blocked = JSON.parse(localStorage.getItem("hgnice_blocked_keys") || "[]");
-        const msg = document.getElementById("auth-msg");
+function analyze(){ 
+    let b=0, s=0, why=[];
+    const seq = results.slice(0, 14).map(r => r.side);
+    if(seq.length < 3) return {side:'WAIT', score:0, b:0, s:0, why:['পর্যাপ্ত ডেটা নেই']};
 
-        if (blocked.includes(val)) {
-            msg.style.display = "block";
-            msg.innerText = "⚠️ আপনার অ্যাক্সেস ব্লক করা হয়েছে!";
-            return;
-        }
-        if (DEFAULT_KEYS.includes(val) || savedKeys.includes(val)) {
-            localStorage.setItem("hgnice_active_key", val);
-            document.getElementById("auth-screen").style.display = "none";
-            document.getElementById("ai-dashboard").style.display = "block";
-            updateNeuralUI();
+    const st = streakInfo();
+
+    // ট্রেন্ড ও স্ট্রিক লজিক
+    if(st && st.count >= 3) {
+        if(st.count >= 10) {
+            if(st.side === 'BIG') s += 2.5; else b += 2.5;
+            why.push('Trend Reverse ('+st.count+')');
         } else {
-            msg.style.display = "block";
-            msg.innerText = "❌ ভুল VIP Key!";
+            if(st.side === 'BIG') b += Math.min(3, st.count) * 0.9; else s += Math.min(3, st.count) * 0.9;
+            why.push('Trend Follow ('+st.count+')');
         }
     }
 
-    function switchMode(m) {
-        gameMode = m;
-        document.getElementById("mode-30").className = m === 30 ? "mode-btn active" : "mode-btn";
-        document.getElementById("mode-60").className = m === 60 ? "mode-btn active" : "mode-btn";
-        currentLockedPeriod = "";
+    // প্যাটার্ন লজিক (3-3, 2-2, 1-1 ইত্যাদি)
+    if (seq.slice(0,6).join('') === 'BIGBIGBIGSMALLSMALLSMALL' || seq.slice(0,6).join('') === 'SMALLSMALLSMALLBIGBIGBIG') {
+        let p = seq[0] === 'BIG' ? 'SMALL' : 'BIG';
+        if(p==='BIG') b+=2; else s+=2; why.push('3-3 Pattern');
+    }
+    if (seq.slice(0,4).join('') === 'BIGBIGSMALLSMALL' || seq.slice(0,4).join('') === 'SMALLSMALLBIGBIG') {
+        let p = seq[0] === 'BIG' ? 'SMALL' : 'BIG';
+        if(p==='BIG') b+=1.8; else s+=1.8; why.push('2-2 Pattern');
+    }
+    if (seq.slice(0,4).join('') === 'BIGSMALLBIGSMALL' || seq.slice(0,4).join('') === 'SMALLBIGSMALLBIG') {
+        let p = seq[0] === 'BIG' ? 'SMALL' : 'BIG';
+        if(p==='BIG') b+=1.7; else s+=1.7; why.push('1-1 ZigZag');
     }
 
-    function toggleAI() {
-        aiRunning = !aiRunning;
-        const btn = document.getElementById("toggle-ai-btn");
-        if (aiRunning) {
-            btn.className = "act-btn btn-stop";
-            btn.innerText = "⏹ STOP AI";
-            currentLockedPeriod = "";
-        } else {
-            btn.className = "act-btn btn-start";
-            btn.innerText = "▶ START AI";
-            document.getElementById("sig-status-text").innerText = "⏸️ বট বিরতিতে আছে";
+    // প্রথম পাতার ম্যাথ ও স্পেশাল লজিক (লজিক ৪ ও ৫)
+    const fpStr = $('firstPage').value.trim();
+    if(fpStr) {
+        const nums = fpStr.split(' ').map(Number).filter(x=>!isNaN(x));
+        if(nums.length >= 3) {
+            let b_num = nums[1], c_num = nums[2];
+            let last3Sum = nums.slice(-3).reduce((acc, val) => acc + val, 0);
+            if(last3Sum % 10 >= 5) b += 1.8; else s += 1.8;
+            why.push('Logic 4 (Last 3 Sum)');
+
+            let sum23 = b_num + c_num;
+            if(sum23 % 10 >= 5) b += 1.6; else s += 1.6;
+            why.push('Logic 5 (2nd+3rd Digit)');
         }
     }
 
-    function getLiveGamePeriod() {
-        const now = new Date();
-        const utcSec = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
-        if (gameMode === 30) {
-            const index = Math.floor(utcSec / 30) + 1;
-            const rem = 30 - (utcSec % 30);
-            return { shortPeriod: String(50000 + index), remaining: rem };
-        } else {
-            const index = Math.floor(utcSec / 60) + 1;
-            const rem = 60 - (utcSec % 60);
-            return { shortPeriod: String(10000 + index), remaining: rem };
-        }
+    const total = b + s; 
+    if(total < 1.0 || Math.abs(b-s) < 0.3) {
+        return {side:'WAIT', score:50, b, s, why:['লজিক কনফ্লিক্ট বা অপর্যাপ্ত ডেটা']};
     }
+    
+    const side = b > s ? 'BIG' : 'SMALL';
+    const score = Math.round(Math.max(b, s) / total * 100);
+    return {side, score, b, s, why}; 
+} 
 
-    function getRoundDigit(periodNum) {
-        let s1 = Math.sin(periodNum * 12.9898 + 78.233) * 43758.5453;
-        let s2 = Math.cos(periodNum * 93.9898 + 12.345) * 23421.6312;
-        return Math.floor((Math.abs((s1 - Math.floor(s1)) + (s2 - Math.floor(s2))) % 1) * 10);
-    }
+function render(){ 
+    const a = analyze();
+    $('signal').textContent = a.side;
+    $('signal').className = 'signalword ' + (a.side === 'BIG' ? 'green' : a.side === 'SMALL' ? 'red' : 'gold'); 
+    $('confidenceTag').textContent = a.side === 'WAIT' ? 'WAIT FOR SIGNAL' : 'VIP SCORE ' + a.score + '%'; 
+    $('reason').textContent = a.why.length ? a.why.slice(0, 3).join(' · ') : 'আরও ফলাফল যোগ করুন'; 
 
-    // High-Accuracy 3-Layer Pro Neural Engine (Ensures Big/Small + Exact Lucky Numbers with High Accuracy)
-    function executeProNeuralAnalysis(targetPeriodStr) {
-        const targetPNum = parseInt(targetPeriodStr, 10);
-        
-        let d1 = getRoundDigit(targetPNum - 1);
-        let d2 = getRoundDigit(targetPNum - 2);
-        let d3 = getRoundDigit(targetPNum - 3);
-
-        let color1 = (d1 % 2 === 1) ? "GREEN" : "RED";
-        let color2 = (d2 % 2 === 1) ? "GREEN" : "RED";
-        let color3 = (d3 % 2 === 1) ? "GREEN" : "RED";
-
-        // Layer 1: Color Trend Matching
-        let colorTrendBig = (color1 === color2) ? (d1 < 5) : (d1 >= 5);
-        if (color1 === color2 && color2 === color3) colorTrendBig = (d1 >= 5);
-
-        // Layer 2: Big/Small Trend Matching
-        let b1 = d1 >= 5;
-        let b2 = d2 >= 5;
-        let b3 = d3 >= 5;
-        let bsTrendBig = (b1 === b2) ? !b1 : b1;
-        if (b1 === b2 && b2 === b3) bsTrendBig = b1;
-
-        // Layer 3: Number Frequency & Pattern Matrix
-        let avgD = (d1 + d2 + d3) / 3;
-        let numTrendBig = avgD <= 4.5;
-
-        let totalBigVotes = (colorTrendBig ? 1 : 0) + (bsTrendBig ? 1 : 0) + (numTrendBig ? 1 : 0);
-        let finalBig = totalBigVotes >= 2;
-        let conf = 92 + (targetPNum % 6); // 92% - 97% High Confidence
-
-        // Dynamic Number Pool Generation (Always shows Big/Small + 2 or 3 Exact Numbers)
-        const bigPool = [5, 6, 7, 8, 9];
-        const smallPool = [0, 1, 2, 3, 4];
-        const pool = finalBig ? bigPool : smallPool;
-        
-        // Pick exact top 2 high-probability numbers based on neural weight
-        let n1 = pool[targetPNum % 5];
-        let n2 = pool[(targetPNum + 2) % 5];
-        if (n1 === n2) n2 = pool[(targetPNum + 3) % 5];
-
-        let colorDisplay = (n1 % 2 === 1) ? "🟢 GREEN / 🟣 VIOLET" : "🔴 RED / 🟣 VIOLET";
-
-        // Increment neural signal count automatically so it grows and gets "pro" over time
-        neuralMemory.totalSignalsGenerated += 1;
-        neuralMemory.log[targetPeriodStr] = { isBig: finalBig, numbers: [n1, n2] };
-        localStorage.setItem("hgnice_pro_neural_memory", JSON.stringify(neuralMemory));
-
-        return { isBig: finalBig, conf, n1, n2, colorDisplay };
-    }
-
-    setInterval(() => {
-        const live = getLiveGamePeriod();
-        const totalDuration = gameMode === 30 ? 30 : 60;
-        const scanDuration = gameMode === 30 ? 7 : 10;
-
-        document.getElementById("period-id").innerText = live.shortPeriod;
-        document.getElementById("timer-sec").innerText = live.remaining + "s";
-
-        if (!aiRunning) return;
-
-        const elapsed = totalDuration - live.remaining;
-        if (elapsed < scanDuration && currentLockedPeriod !== live.shortPeriod) {
-            const pct = Math.min(90, Math.floor((elapsed / scanDuration) * 90) + 15);
-            document.getElementById("scan-bar").style.width = pct + "%";
-            document.getElementById("sig-status-text").innerText = "🔍 ৩-লেয়ার প্রো নিউরাল স্ক্যান চলছে...";
-            document.getElementById("main-sig-text").innerText = "ANALYZING...";
-            document.getElementById("main-sig-text").style.color = "#facc15";
-            document.getElementById("color-txt").innerText = `পিরিয়ড ${live.shortPeriod} এনালাইসিস হচ্ছে`;
-            document.getElementById("num-badge").innerText = "🎯 সংখ্যা: --";
-            return;
+    // অ্যাকুরেসি হিসাব
+    let totalTested = 0, totalWins = 0;
+    results.forEach(r => {
+        if(r.status) {
+            totalTested++;
+            if(r.status === 'WIN') totalWins++;
         }
-
-        if (currentLockedPeriod !== live.shortPeriod) {
-            currentLockedPeriod = live.shortPeriod;
-
-            const res = executeProNeuralAnalysis(currentLockedPeriod);
-            document.getElementById("scan-bar").style.width = "100%";
-            updateNeuralUI();
-
-            const sigWord = res.isBig ? "BIG" : "SMALL";
-            document.getElementById("sig-status-text").innerText = `🔥 পিরিয়ড ${currentLockedPeriod} মাস্টার সিগন্যাল প্রস্তুত!`;
-            
-            const mainEl = document.getElementById("main-sig-text");
-            mainEl.innerText = `${sigWord} (${res.conf}%)`;
-            mainEl.style.color = res.isBig ? "#facc15" : "#38bdf8";
-
-            document.getElementById("color-txt").innerText = res.colorDisplay;
-            document.getElementById("num-badge").innerText = `🎯 লাকি সংখ্যা: ${res.n1}, ${res.n2}`;
-            document.getElementById("layer-match-txt").innerText = `প্রো ব্রেইন মেমোরি সিঙ্কড | পিরিয়ড: ${currentLockedPeriod}`;
-
-            speakBn(`পিরিয়ড ${currentLockedPeriod.slice(-3)}, ${res.isBig ? 'বিগ' : 'স্মল'}, সংখ্যা ${res.n1}, ${res.n2}`);
-        }
-
-        if (live.remaining <= 4) {
-            document.getElementById("sig-status-text").innerText = "🔒 বেট লক — পরবর্তী রাউন্ডের ডেটা জমা হচ্ছে...";
-            document.getElementById("scan-bar").style.width = "20%";
-        }
-    }, 1000);
-
-    // Draggable Window
-    const win = document.getElementById("ai-bot-window");
-    const handle = document.getElementById("drag-handle");
-    let isDrag = false, dx = 0, dy = 0;
-
-    handle.addEventListener("touchstart", e => {
-        isDrag = true;
-        dx = e.touches[0].clientX - win.offsetLeft;
-        dy = e.touches[0].clientY - win.offsetTop;
     });
-    document.addEventListener("touchmove", e => {
-        if (!isDrag) return;
-        win.style.left = (e.touches[0].clientX - dx) + "px";
-        win.style.top = (e.touches[0].clientY - dy) + "px";
+
+    let winAcc = totalTested > 0 ? Math.round((totalWins / totalTested) * 100) : 0;
+    $('totalTested').textContent = totalTested;
+    $('winAccuracy').textContent = winAcc + '%';
+    $('accBar').style.width = winAcc + '%';
+
+    let html = '';
+    results.forEach(r => {
+        let pillClass = r.side === 'BIG' ? 'big' : 'small';
+        let statusBadge = '—';
+        if(r.status === 'WIN') statusBadge = '<span class="pill win">WIN</span>';
+        else if(r.status === 'LOSS') statusBadge = '<span class="pill loss">LOSS</span>';
+
+        html += `<tr>
+            <td>${r.period}</td>
+            <td><span class="pill ${pillClass}">${r.side}</span> (${r.n !== null ? r.n : '-'})</td>
+            <td>${r.predicted || '—'}</td>
+            <td>${statusBadge}</td>
+        </tr>`;
     });
-    document.addEventListener("touchend", () => { isDrag = false; });
+    $('historyBody').innerHTML = html || '<tr><td colspan="4" style="text-align:center; padding:20px;" class="muted">এখনো কোনো ফলাফল যোগ করা হয়নি।</td></tr>';
+} 
 
-    function toggleMin() {
-        const c = document.getElementById("bot-content");
-        c.style.display = c.style.display === "none" ? "block" : "none";
-    }
+// ৩০ সেকেন্ড কাউন্টডাউন টাইমার
+function updateTimer() {
+    tick--;
+    if (tick < 0) tick = 30;
+    $('timer').textContent = '00:' + (tick < 10 ? '0' + tick : tick);
+}
+setInterval(updateTimer, 1000);
 
-    window.onload = () => {
-        const saved = localStorage.getItem("hgnice_active_key");
-        if (saved && DEFAULT_KEYS.includes(saved)) {
-            document.getElementById("vip-key-input").value = saved;
-            verifyKey();
-        }
-    };
+$('firstPage').addEventListener('input', render);
+render();
 </script>
+
 </body>
 </html>
